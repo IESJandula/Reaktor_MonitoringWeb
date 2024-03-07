@@ -37,3 +37,23 @@ function myFunction(elemento)
   }
 
 }
+
+async function testReaktor()
+{
+  console.log("TEST - REKTOR CLICKED");
+
+  response = await fetch('http://localhost:8084/computers/web',
+  {
+      method:'POST',//Informamos de que se utilizara una llamada de metodo post
+      headers:{//Con los headers decimos que se utiliza json es muy importante
+          'Content-Type':'application/json',
+          'serialNumber':'5A59A1A8-CFA5-0000-0000-000000000000',
+      },
+      body: JSON.stringify( //Convertimos a json
+          {})
+  })
+  //Convertimos el json a datos planos y guardamos en una variable que mostramos por consola
+  datos = await response.json()
+  console.log(datos)
+
+}

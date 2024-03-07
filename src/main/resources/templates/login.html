@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Login Reaktor</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <center>
+        <div class="container" style="margin-top: 10%;">
+          <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+            
+            
+            <!-- El inicio del formulario de login, tiene que tener estos atributos, los cuales 
+                indican que será el formulario de login y que utilizará el método (verbo) POST.-->
+                
+                
+              <form th:action="@{/login}" method="POST" class="form-signin">
+                <h2>💻 Welcome to Reaktor 💻</h2>
+                <hr/>
+                <br/>
+                
+                <!-- El input del nombre de usuario y de la password , el cual tiene que cumplir con el nombre de variable “user_name” y "password" , que luego recogeremos. -->
+                <input type="text" id="user_name" name="user_name" placeholder="User Name" class="form-control"/> <br/>
+                <input type="password" th:placeholder="Password" id="password" name="password" class="form-control"/> <br/>
+        
+                <!-- Div informativo, este utiliza una variable para determinar si existe error al iniciar sesión o loguearse, 
+                mediante un condicional , mostraremos el div o no para informar al usuario.-->
+                
+                <div align="center" th:if="${param.error}">
+                  <p style="font-size:20px ; color: #FF1C19;">⚠️Incorrect Username or Password, please try again!⚠️</p>
+                </div>
+
+                <!-- Botón de inicio de sesión, el cual tiene que tener el value=”Login”, type=”Submit” 
+                e importante que el th:text sea exactamente “Login”.
+                -->
+                <button class="btn btn-block" style="background-color: #006bc9; color: white;" name="Submit" value="Login" type="Submit"
+                        th:text="Login"></button>
+              </form>
+            </div>
+          </div>
+        </div>
+    </center>
+</body>
+</html>
