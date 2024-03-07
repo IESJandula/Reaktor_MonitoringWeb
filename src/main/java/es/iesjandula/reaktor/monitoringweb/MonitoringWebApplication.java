@@ -33,6 +33,7 @@ public class MonitoringWebApplication implements CommandLineRunner
 	@Autowired
 	private IUserRepository iUserRepository;
 
+	/** Attribute bCryptPasswordEncoder*/
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -76,7 +77,7 @@ public class MonitoringWebApplication implements CommandLineRunner
 		user.setRoles(new ArrayList<Role>());
 		user.setActive(true);
 
-		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		user.setPassword(this.bCryptPasswordEncoder.encode(user.getPassword()));
 		user.setActive(true);
 		user.setRoles(new ArrayList<Role>(List.of(this.iRoleRepository.findByRole("ADMIN"))));
 		this.iUserRepository.save(user);

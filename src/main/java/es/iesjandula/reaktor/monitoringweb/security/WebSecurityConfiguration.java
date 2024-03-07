@@ -27,42 +27,48 @@ public class WebSecurityConfiguration
 	private ReaktorUserDetalisService userDetailsService;
 
 	/**
-	 * Method authenticationProvider
-	 * 
-	 * @return
+	 * Method authenticationProvider that get all the data from the user stored
+	 * in the UserDetails
+	 *
+	 * @return DaoAuthenticationProvider
 	 */
 	@Bean
 	public DaoAuthenticationProvider authenticationProvider()
 	{
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetailsService(userDetailsService);
-		authProvider.setPasswordEncoder(bCryptPasswordEncoder);
+		authProvider.setUserDetailsService(this.userDetailsService);
+		authProvider.setPasswordEncoder(this.bCryptPasswordEncoder);
 		return authProvider;
 	}
 
+
 	/**
-	 * Method filterChain
-	 * 
-	 * @param  http
-	 * @return
+	 * Method filterChain , used for set specific privileges when the user try to get any resource
+	 * @param http
+	 * @return SecurityFilterChain
 	 * @throws Exception
 	 */
 	@Bean
 	public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception
 	{
-		http.csrf().disable().authorizeHttpRequests()
-				.requestMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**").permitAll()
-				.requestMatchers("/login").permitAll()
-				.requestMatchers("/js/**").hasAnyAuthority("ADMIN")
-				.requestMatchers("/**").hasAnyAuthority("ADMIN")
-				.and()
-				.formLogin()
+		http.
+			csrf().
+				disable().
+					authorizeHttpRequests()
+						.requestMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**").permitAll()
+							.requestMatchers("/login").permitAll()
+								.requestMatchers("/js/**").hasAnyAuthority("ADMIN")
+									.requestMatchers("/**").hasAnyAuthority("ADMIN")
+		.and()
+			.formLogin()
 				.loginPage("/login")
 				.defaultSuccessUrl("/")
 				.usernameParameter("user_name")
 				.passwordParameter("password")
-				.and().logout()
-				.and().httpBasic();
+		.and()
+			.logout()
+		.and()
+			.httpBasic();
 
 		return http.build();
 	}

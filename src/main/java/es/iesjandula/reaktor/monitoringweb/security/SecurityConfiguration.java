@@ -6,7 +6,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @author David Martinez
- * Thus class is for enable crypt passwords
+ * This class is for enable crypt passwords
  */
 @Configuration
 public class SecurityConfiguration
