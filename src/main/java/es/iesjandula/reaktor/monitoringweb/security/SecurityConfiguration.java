@@ -6,7 +6,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @author David Martinez
- * This class is for enable crypt passwords
+ * Una clase muy importante es la que habilita que las password estén encriptadas y 
+ * no en plano, para ello crearemos la siguiente clase 
+ * Está simplemente está como configuración para habilitar la encriptación de password.
  */
 @Configuration
 public class SecurityConfiguration

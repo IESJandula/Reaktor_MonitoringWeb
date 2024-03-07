@@ -18,7 +18,8 @@ import jakarta.transaction.Transactional;
 
 /**
  * @author David Martinez
- * This class is used for get the UserDetailsService from spring security
+ * interfaz de spring security que se implementa para que podamos
+ * consultar qué usuarios tienen autoridad o no para acceder a recursos y ver si existen o no
  *
  */
 @Service
@@ -42,6 +43,12 @@ public class ReaktorUserDetalisService implements UserDetailsService
 
 	/**
 	 * Method loadUserByUsername
+	 * Este se encarga de llamar al repositorio y buscar el usuario por su username que le llega por parámetro, este será el que se recogerá en el campo nombre de usuario.
+	 * Comprobará si el usuario existe o no mediante un null , y si no existe , arrojamos UsernameNotFoundException.
+	 * Si encuentra usuario , llamará al método getUserAuthority y le pasará los roles del usuario.
+	 * List<GrantedAuthority> authorities = this.getUserAuthority(user.getRoles());
+	 * Finalmente se encargará de llamar al metodo buildForAuthentication , pasandole el usuario y lista de autoridades.
+	 * UserDetails userDetails = this.buildUserForAuthentication(user, authorities);
 	 * @param userName the username from the loggin
 	 * @return UserDetails the UserDetails for spring security
 	 * @throws UsernameNotFoundException
@@ -71,7 +78,9 @@ public class ReaktorUserDetalisService implements UserDetailsService
 	}
 
 	/**
-	 * Method getUserAuthority used for converts Role to SimpleGrantedAuthority
+	 * Method getUserAuthority 
+	 * Este recibe una lista de Role del usuario y creará por cada rol un SimpleGrantedAuthority , 
+	 * el cual añadirá a una lista de GrantedAuthority y devolverá.
 	 * and add all into List<GrantedAuthority>
 	 * @param  userRoles
 	 * @return List<GrantedAuthority>
@@ -89,7 +98,10 @@ public class ReaktorUserDetalisService implements UserDetailsService
 	}
 
 	/**
-	 * Method buildUserForAuthentication , this method determine if the user have the privileges or not
+	 * Method buildUserForAuthentication 
+	 *  Este se encarga de evaluar el usuario y la lista de autoridades del método anterior , para determinar si el usuario tiene o no tiene privilegios para el recurso.
+	 *	Este retornará un UserDetails camuflado en un objeto User de spring security.
+	 *	En este user se indica el nombre de usuario , la password , si está activo , si la cuenta ha expirado , si los credenciales han expirado  ,si está bloqueada y si tiene permiso con la lista de autoridades pasada.
 	 *
 	 * @param  user
 	 * @param  authorities
