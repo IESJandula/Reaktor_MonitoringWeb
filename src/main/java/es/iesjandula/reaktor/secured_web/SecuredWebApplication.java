@@ -1,4 +1,4 @@
-package es.iesjandula.reaktor.monitoringweb;
+package es.iesjandula.reaktor.secured_web;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import es.iesjandula.reaktor.models.Role;
 import es.iesjandula.reaktor.models.User;
-import es.iesjandula.reaktor.monitoringweb.security.repository.IRoleRepository;
-import es.iesjandula.reaktor.monitoringweb.security.repository.IUserRepository;
+import es.iesjandula.reaktor.secured_web.security.repository.IRoleRepository;
+import es.iesjandula.reaktor.secured_web.security.repository.IUserRepository;
 
 /**
  * @author David Martinez
@@ -23,7 +23,7 @@ import es.iesjandula.reaktor.monitoringweb.security.repository.IUserRepository;
 @SpringBootApplication
 @EnableJpaRepositories
 @EntityScan(basePackages = "es.iesjandula.reaktor.models")
-public class MonitoringWebApplication implements CommandLineRunner
+public class SecuredWebApplication implements CommandLineRunner
 {
 	/** Attribute iRoleRepository */
 	@Autowired
@@ -44,7 +44,7 @@ public class MonitoringWebApplication implements CommandLineRunner
 	 */
 	public static void main(String[] args)
 	{
-		SpringApplication.run(MonitoringWebApplication.class, args);
+		SpringApplication.run(SecuredWebApplication.class, args);
 	}
 
 	/**

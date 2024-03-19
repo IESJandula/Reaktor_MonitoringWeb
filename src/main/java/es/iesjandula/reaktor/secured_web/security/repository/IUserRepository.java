@@ -1,4 +1,4 @@
-package es.iesjandula.reaktor.monitoringweb.security.repository;
+package es.iesjandula.reaktor.secured_web.security.repository;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;

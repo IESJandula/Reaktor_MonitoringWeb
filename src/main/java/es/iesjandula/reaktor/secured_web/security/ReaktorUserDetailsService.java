@@ -1,4 +1,4 @@
-package es.iesjandula.reaktor.monitoringweb.security;
+package es.iesjandula.reaktor.secured_web.security;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import es.iesjandula.reaktor.models.Role;
 import es.iesjandula.reaktor.models.User;
-import es.iesjandula.reaktor.monitoringweb.security.repository.IUserRepository;
+import es.iesjandula.reaktor.secured_web.security.repository.IUserRepository;
 import jakarta.transaction.Transactional;
 
 /**
@@ -23,7 +23,7 @@ import jakarta.transaction.Transactional;
  *
  */
 @Service
-public class ReaktorUserDetalisService implements UserDetailsService
+public class ReaktorUserDetailsService implements UserDetailsService
 {
 
 	/** Attribute iUserRepository */
@@ -35,7 +35,7 @@ public class ReaktorUserDetalisService implements UserDetailsService
 	 * @param iUserRepository
 	 */
 	@Autowired
-	public ReaktorUserDetalisService(IUserRepository iUserRepository)
+	public ReaktorUserDetailsService(IUserRepository iUserRepository)
 	{
 		this.iUserRepository = iUserRepository;
 	}

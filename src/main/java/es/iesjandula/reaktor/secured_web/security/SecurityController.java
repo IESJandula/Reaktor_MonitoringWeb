@@ -1,4 +1,4 @@
-package es.iesjandula.reaktor.monitoringweb.security;
+package es.iesjandula.reaktor.secured_web.security;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

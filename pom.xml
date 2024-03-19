@@ -9,9 +9,9 @@
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>es.iesjandula.reaktor</groupId>
-    <artifactId>MonitoringWeb</artifactId>
+    <artifactId>SecuredWeb</artifactId>
     <version>1.0.0</version>
-    <description>Reaktor</description>
+    <description>SecuredWeb</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -74,32 +74,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>
-                                es.iesjandula.reaktor.monitoringweb.MonitoringWebApplication</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <outputDirectory>
-                        ${project.build.directory}/../../deploy/server</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
@@ -147,7 +121,7 @@
                     <archive>
                         <manifest>
                             <mainClass>
-                                es.iesjandula.reaktor.monitoringweb.MonitoringWebApplication</mainClass>
+                                es.iesjandula.reaktor.secured_web.SecuredWebApplication</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
