@@ -28,7 +28,7 @@ public class WebSecurityConfiguration
 
 	/** Attribute userDetailsService */
 	@Autowired
-	private ReaktorUserDetalisService userDetailsService;
+	private ReaktorUserDetailsService userDetailsService;
 
 	/**
 	 * Method authenticationProvider 
