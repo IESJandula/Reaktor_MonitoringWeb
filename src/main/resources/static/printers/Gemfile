@@ -71,3 +71,13 @@ gem "rest-client", "~> 2.1"
 gem "http", "~> 5.2"
 
 gem "tailwindcss-rails", "~> 2.3"
+
+gem 'simple_table_for', '~> 0.4.0'
+
+gem 'dry-types'
+
+gem 'dry-struct'
+
+gem "cssbundling-rails", "~> 1.4"
+
+gem "jsbundling-rails", "~> 1.3"

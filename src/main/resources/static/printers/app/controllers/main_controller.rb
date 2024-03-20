@@ -1,11 +1,9 @@
-require 'rest-client'
-require 'json'
+
 # Main controller 
 class MainController < ApplicationController
-
+  
   # postPdf control 
   def postPdf
-
     if params[:exampleFormControlFile1].present?
 
       # The file content from the web form
@@ -26,7 +24,7 @@ class MainController < ApplicationController
         begin
           response = RestClient.post(
             "http://192.168.1.215:8081/print",
-            { file: @file, printerName: @printer, numCopies: @numCopies, color: @color, orientation: @orientation, faces: @faces },
+            { file: @file, printerName: @printer, numCopies: @numCopies, color: @color, orientation: @orientation, faces: @faces, user: "Sutil" },
             multipart: true
           )
           puts response.code
@@ -44,7 +42,18 @@ class MainController < ApplicationController
   end
 
   # home control logic
-  def home 
+  def home
+    begin
+      response = RestClient.get(
+        "http://192.168.1.215:8081/get/user/prints",
+        params: {user: "Sutil"}
+      ) 
+      @info = PrintAction.from_json!(response.body)
+      puts @info
+      puts response.code
+    rescue RestClient::ExceptionWithResponse => e
+      puts "Error: #{e.response}"
+    end    
   end
   
   # uploadPdf control logic

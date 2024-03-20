@@ -11,9 +11,12 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-repeat">
+  <body>
     <main >
-      <h1 class ="text-4xl bg-red-600 text-white p-5 font-serif font-bold shadow-md shadow-stone-500 bg-gradient-to-r">RemotePrinterWeb</h1>
+      <div class="bg-red-600 shadow-md shadow-stone-500 bg-gradient-to-r flex justify-between items-center">
+        <h1 class="text-3xl text-white p-5 font-serif font-bold">RemotePrinterWeb</h1>
+        <h1 class="text-xl text-white p-5 font-serif font-bold">Usuario: <%= @userName %></h1>
+      </div>
       <%= yield %>
     </main>
   </body>
