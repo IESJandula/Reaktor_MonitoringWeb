@@ -1,0 +1,22 @@
+<html>
+    <head>
+     
+    </head>
+    <body>
+        <h1>ENLACE PRINTER222222</h1>
+        
+        <li class="nav-item mr-auto" th:fragment="logout" sec:authorize="isAuthenticated()">
+        
+            <form class="nav-link" th:action="@{/logout}" method="post" style="display:inline">
+                <span id="userLogged" sec:authentication="name">NombreUsuario</span> con roles: 
+                <span id="userLoggedRoles" sec:authentication="principal.authorities">roles</span>
+                
+                <input type="submit" value="Logout"/>
+            </form>
+        </li>
+        
+        <h1 onclick="openPrinters()">Ir a printers</h1>
+        
+         <script type="text/javascript" src="js/getUserName.js"></script>
+    </body>
+</html>
