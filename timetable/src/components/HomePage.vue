@@ -11,7 +11,7 @@ const router = useRouter();
         <h1 class="titulo">Reaktor Horarios</h1>
         <h2 class="bienvenida">Bienvenido usuario</h2>
         <div id="botones">
-            <button v-on:click="router.push('/horarios/mapa')">Entrar</button>
+            <button v-on:click="router.push('/horarios/profesores')">Entrar</button>
             <button>Cerrar sesion</button>
         </div>  
     </div>
