@@ -1,5 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
+import { getCourses } from '@/api/peticiones';
+import { ref } from 'vue';
 //Instancia del router
 const router = useRouter();
 //Acceso al index.html
@@ -7,6 +9,21 @@ const body = document.getElementById("body");
 body.style.backgroundColor = "skyblue";
 body.style.padding = 0;
 body.style.margin = 0;
+
+//Instancia de variables
+let cursos = ref([]);
+
+const getCourse = async()=>{
+    const data = await getCourses();
+    let arrayCursos = [];
+    selector.value = false;
+    for(let i = 0;i<data.length;i++)
+    {
+        arrayCursos.push(data[i].name);
+    }
+
+    cursos = ref(arrayCursos);
+}
 </script>
 
 <template>
@@ -87,7 +104,7 @@ body.style.margin = 0;
     </div>   
 
 <div id="contenedorPDF">
-    <iframe src="/Puntos_Plan_De_Convivencia.pdf" class="iframe" ></iframe>
+    <embed type="text/html" src="/Puntos_Plan_De_Convivencia.pdf"  width="60%" height="700px">
 </div>
 
 </template>
@@ -130,6 +147,8 @@ body.style.margin = 0;
 
 #contenedorPDF{
     margin-top: 10px;
+  
+  
     display: flex;
     justify-content:center;
     height: 100%;

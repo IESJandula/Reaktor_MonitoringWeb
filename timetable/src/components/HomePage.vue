@@ -32,7 +32,7 @@ const router = useRouter();
 #botones{
     width: fit-content;
     align-items: center;
-    margin-left: 42%;
+    margin-left: 46%;
     margin-top: 5%;
     
 }

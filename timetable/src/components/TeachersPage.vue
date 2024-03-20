@@ -19,6 +19,7 @@ let cursos = ref([]);
 let infoProfe = ref("");
 let infoNumAula = ref("");
 let infoNombreAula = ref("");
+let noAula = ref("");
 let info = ref(false);
 
 //Metodos
@@ -63,16 +64,24 @@ const getCourse = async () =>{
 
 const getLocTeacher = async (nombre,apellidos)=>{
     const data = await getTeacherClassroom(nombre,apellidos);
-    console.log(data.number);
     let aula = "";
     let curso = "";
-    console.log("Entro aqui")
-    aula+=data.floor+"."+data.number;
-    curso = data.name;
-    infoProfe.value = nombre+" "+apellidos;
-    infoNumAula.value = aula;
-    infoNombreAula.value = curso;
-    
+    console.log(data)
+    if(typeof data == "undefined")
+    {
+        infoProfe.value = nombre+" "+apellidos;
+        noAula.value = "  No se encuentra ningun aula  ";
+    }
+    else
+    {
+        noAula.value = "";
+        aula += data.floor+"."+data.number;
+        curso = data.name;
+        infoProfe.value = nombre+" "+apellidos;
+        infoNumAula.value = aula;
+        infoNombreAula.value = curso;
+    }
+   
 }
 const mostrarDocente = ()=>{
     //Obtenemos el elemento selection por su id
@@ -99,11 +108,13 @@ watch(selector,(nuevo,viejo)=>
         console.log("Informacion bloque profesores actualizada");
         getTeacher();
         getHour();
+        info.value = false;
     }
     else
     {
         console.log("Informacion bloque cursos actualizada");
         getCourse();
+        info.value = false;
     }
 });
 watch(info,(nuevo,viejo)=>
@@ -171,13 +182,21 @@ watch(info,(nuevo,viejo)=>
             <button class="button-docente">Buscar por curso</button> <!-- Devolverá qué profesor se encuentra en el aula actualmente o en el tramo horario elegido y asignatura impartida -->
         </div>
         <div id="info-aula" v-show="info">
-            <br>
-            <h3>El profesor {{ infoProfe }}</h3>
-            <br>
-            <h3>Se encuentra en el aula {{ infoNumAula }}</h3>
-            <br>
-            <h3>Curso {{ infoNombreAula }}</h3>
-            <br>
+            <div v-if="noAula==''">
+                <br>
+                <h3>El profesor {{ infoProfe }}</h3>
+                <br>
+                <h3>Se encuentra en el aula {{ infoNumAula }}</h3>
+                <br>
+                <h3>Curso {{ infoNombreAula }}</h3>
+                <br>
+            </div>
+            <div v-else>
+                <h3>El profesor {{ infoProfe }}</h3>
+                <br>
+                <h3 style="text-align: center;">No se encuentra ningun aula</h3>
+                <br>
+            </div>
         </div>
     </div>
     <br><br>
