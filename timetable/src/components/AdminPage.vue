@@ -2,6 +2,12 @@
 import { useRouter } from 'vue-router';
 //Instancia del router
 const router = useRouter();
+//Acceso al body
+const body = document.getElementById("body");
+body.style.backgroundColor = "rgb(241, 241, 224)";
+body.style.padding = 0;
+body.style.margin = 0;
+
 </script>
 
 <template>
@@ -29,23 +35,23 @@ const router = useRouter();
                 <section class="seccion1">
                     <label  for="Configuración en xml">Cargar configuración en xml:</label>
                     <div class="marco_interno">
-                        <input type="file" placeholder="Configuración..." accept=".xml">
+                        <input type="file" id="confXml" placeholder="Configuración..." accept=".xml">
                     </div>
-                    <input type="submit" value="Cargar" id="alinear">
+                    <button  id="alinear">Cargar</button>
                 </section>
                 <section class="seccion1">
                     <label  for="Roles csv">Cargar roles en csv:</label>
                     <div class="marco_interno">
-                        <input  type="file" placeholder="Roles..." accept=".csv">
+                        <input type="file" placeholder="Roles..." accept=".csv">
                     </div>
-                    <input type="submit" value="Cargar" id="alinear">
+                    <button  id="alinear">Cargar</button>
                 </section>
                 <section class="seccion1">
                     <label for="Alumnos en xml">Cargar alumnos en xml:</label>
                     <div class="marco_interno">
                         <input type="file" placeholder="Alumnos..." accept=".xml">
                     </div>
-                    <input type="submit" value="Cargar" id="alinear">
+                    <button  id="alinear">Cargar</button>
                 </section>
             </div>
 </template>
