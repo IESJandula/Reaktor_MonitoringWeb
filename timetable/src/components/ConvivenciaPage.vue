@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { getCourses } from '@/api/peticiones';
-import { ref } from 'vue';
+import { ref,onMounted, watch } from 'vue';
 //Instancia del router
 const router = useRouter();
 //Acceso al index.html
@@ -12,18 +12,30 @@ body.style.margin = 0;
 
 //Instancia de variables
 let cursos = ref([]);
+let recarga = ref(true);
 
 const getCourse = async()=>{
     const data = await getCourses();
     let arrayCursos = [];
-    selector.value = false;
     for(let i = 0;i<data.length;i++)
     {
         arrayCursos.push(data[i].name);
     }
 
     cursos = ref(arrayCursos);
+    recarga.value = false;
 }
+
+onMounted(async ()=>{
+    getCourse();
+});
+
+watch(recarga,(nuevo,viejo)=>{
+    if(!nuevo)
+    {
+        recarga.value = true;
+    }
+})
 </script>
 
 <template>
@@ -45,7 +57,7 @@ const getCourse = async()=>{
         </div>
    </header> 
 
-    <div class="opcion"> 
+    <div class="opcion" v-show="recarga"> 
 
         <div>
             <h2>Docente actualmente de guardia: <span id="docenteguardia"><!--Aqui se integra el maestro de guardia en ese momento --> Valor automatico. </span></h2>
@@ -56,12 +68,7 @@ const getCourse = async()=>{
             <div class="clases"> <!--Boton donde seleccionar el curso del alumno -->
                 <select class="form-select" aria-label="Default select example">
                     <option selected>Cursos</option>
-                    <option value="1">1ºESO</option>
-                    <option value="2">2ºESO</option>
-                    <option value="3">3ºESO</option>
-                    <option value="4">4ºESO</option>
-                    <option value="5">1ºBachillerato</option>
-                    <option value="6">2ºBachillerato</option>
+                    <option v-for="i in cursos">{{ i }}</option>
                 </select>
             </div>
     
