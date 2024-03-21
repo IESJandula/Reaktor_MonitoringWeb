@@ -38,17 +38,23 @@
                             <% @redes.each do |red| %>
                                 <% if red['wlanConectionName'] == nombre_red %>
                                     <% red['equipos'].each do |equipo| %>
-                                        <article class="tarjeta">
-                                            <div class="contenedor">
-                                                <h1 id="ip">IP: <%= equipo['ip'] %></h1>
-                                                <% if equipo['tipo'].present? %>
-                                                    <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %> || <strong>TIPO:</strong> <%= equipo['tipo'] %></p>
-                                                <% else %>
-                                                    <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %>
-                                                <% end %>
-                                                <p id="mac"><strong>FECHA:</strong> <%= red['fecha'] %>
-                                            </div>
-                                        </article>
+                                        <% if equipo['tipo'] == "STANDARD" %>
+                                            <article class="tarjeta-verde">
+                                        <% elsif equipo['tipo'] == "IMPRESORA" %>
+                                            <article class="tarjeta-roja">
+                                        <% else %>
+                                            <article class="tarjeta">
+                                        <% end %>
+                                                <div class="contenedor">
+                                                    <h1 id="ip">IP: <%= equipo['ip'] %></h1>
+                                                    <% if equipo['tipo'].present? %>
+                                                        <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %> || <strong>TIPO:</strong> <%= equipo['tipo'] %></p>
+                                                    <% else %>
+                                                        <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %></p>
+                                                    <% end %>
+                                                    <p id="mac"><strong>FECHA:</strong> <%= red['fecha'] %></p>
+                                                </div>
+                                            </article>
                                     <% end %>
                                 <% end %>
                             <% end %>
