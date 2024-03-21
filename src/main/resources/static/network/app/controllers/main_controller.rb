@@ -13,6 +13,18 @@ class MainController < ApplicationController
         rescue RestClient::ExceptionWithResponse => e
             puts "Error: #{e.response}"
         end
+
+        urlBusqueda = "http://localhost:8080/net/red/by/search"
+        begin
+            responseBusqueda = RestClient.get(
+                urlBusqueda
+            ) 
+            @busqueda  = JSON.parse(responseBusqueda.body)
+            puts @busqueda
+            puts responseBusqueda.code
+        rescue RestClient::ExceptionWithResponse => e
+            puts "Error: #{e.response}"
+        end
     end
 
     def borrar

@@ -10,13 +10,11 @@
     <body>
         <header>
             <h1 id="titulo">Network Server</h1>
-
             <div id="menu">
                 <%= link_to t("Inicio"), "/inicio"%>
                 <%= link_to t("Borrar Redes"), "/borrar"%>
-
                 <div id="busqueda-container">
-                    <input type="text" id="busqueda" placeholder="Buscar...">
+                    <input type="text" id="busqueda" placeholder="Buscar..." onkeyup="filtrarTarjetas()">
                 </div>
             </div>
         </header>
