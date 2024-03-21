@@ -1,7 +1,8 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { getCourses } from '@/api/peticiones';
+import { getCourses,getPoints } from '@/api/peticiones';
 import { ref,onMounted, watch } from 'vue';
+import { Puntos } from '../models/puntos.js'
 //Instancia del router
 const router = useRouter();
 //Acceso al index.html
@@ -12,7 +13,11 @@ body.style.margin = 0;
 
 //Instancia de variables
 let cursos = ref([]);
+let puntos = ref([]);
 let recarga = ref(true);
+
+//Variables privadas
+let _puntos = ref([]);
 
 const getCourse = async()=>{
     const data = await getCourses();
@@ -26,8 +31,33 @@ const getCourse = async()=>{
     recarga.value = false;
 }
 
+const cargarPuntos = async()=>{
+    const data = await getPoints();
+    let arrayPuntos = [];
+    let stringPuntos = [];
+    for(let i = 0;i<data.length;i++)
+    {
+        let puntos = new Puntos(data[i].points,data[i].description);
+        arrayPuntos.push(puntos);
+        if(puntos.points>0)
+        {
+            stringPuntos.push(puntos.description+" +"+puntos.points);
+        }
+        else
+        {
+            stringPuntos.push(puntos.description+" "+puntos.points);
+        }
+        
+    }
+
+    puntos = ref(stringPuntos);
+    _puntos = ref(arrayPuntos);
+    recarga.value = false;
+}
+
 onMounted(async ()=>{
     getCourse();
+    cargarPuntos();
 });
 
 watch(recarga,(nuevo,viejo)=>{
@@ -89,17 +119,7 @@ watch(recarga,(nuevo,viejo)=>{
             <div class="Puntos"><!--Boton donde seleccionar la puntuación que merece el alumno-->
                 <select class="form-select" aria-label="Default select example">
                     <option selected>Puntos</option>
-                    <option value="1">-5</option>
-                    <option value="2">-4</option>
-                    <option value="3">-3</option>
-                    <option value="4">-2</option>
-                    <option value="5">-1</option>
-                    <option value="6">0</option>
-                    <option value="7">1</option>
-                    <option value="8">2</option>
-                    <option value="8">3</option>
-                    <option value="8">4</option>
-                    <option value="8">5</option>
+                    <option v-for="i in puntos">{{ i }}</option>
                 </select>
             </div>
     

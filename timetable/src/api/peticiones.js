@@ -146,3 +146,23 @@ export const getTeacherClassroomHora = async (nombre,apellido,tramo)=>{
         console.log(error);
     }
 }
+
+export const getPoints = async ()=>{
+    try
+    {
+        let url = "http://localhost:8088/horarios/get/points";
+
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("Error de servidor, no se pudo presentar la peticion")
+        }
+
+        return await response.json();
+    }
+    catch(error)
+    {
+        console.log(error)
+    }
+}
