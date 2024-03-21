@@ -14,4 +14,25 @@ class MainController < ApplicationController
             puts "Error: #{e.response}"
         end
     end
+
+    def borrar
+        urlBorrar = "http://localhost:8080/net/red/deleteAllBefore"
+        puts params
+
+        if params[:num_dias].present?
+            num_dias = params[:num_dias]
+            begin
+                responseBorrar = RestClient.post(
+                    urlBorrar,
+                    {numeroDiasString: num_dias}
+                ) 
+                puts responseBorrar.code
+                
+            rescue RestClient::ExceptionWithResponse => e
+                puts "Error: #{e.response}"
+            end
+        else
+            puts "No se realizo la petición, parametro vacio"
+        end
+    end
 end

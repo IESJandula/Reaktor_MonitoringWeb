@@ -7,7 +7,9 @@ Rails.application.routes.draw do
 
   get "inicio", to: "main#inicio"
 
-  get "borrar-redes", to: "main#borrar-redes"
+  get "borrar", to: "main#borrar"
+
+  post '/borrar', to: 'main#borrar'
 
   # Defines the root path route ("/")
   # root "posts#index"
