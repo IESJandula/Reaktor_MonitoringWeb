@@ -1,8 +1,10 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { getTeachers,getHours,getCourses,getTeacherClassroom } from '@/api/peticiones';
+import { ref, watch, onMounted } from 'vue';
+import { getTeachers,getHours,getCourses,getTramos,getTeacherClassroom,getTeacherClassroomHora } from '@/api/peticiones';
 import { useRouter } from 'vue-router';
-import { separadorNombre } from '../js/utils.js'
+import { separadorNombre,getSpecificTramo } from '../js/utils.js';
+import { Profesor } from '../models/profesores.js';
+import { Tramo } from '../models/tramos.js';
 //Instancia del router para cambiar de componente
 const router = useRouter();
 //Acceso al index.html
@@ -17,23 +19,33 @@ let profesores = ref([]);
 let horas = ref([]);
 let cursos = ref([]);
 let infoProfe = ref("");
+let infoTramo = ref("");
 let infoNumAula = ref("");
 let infoNombreAula = ref("");
 let noAula = ref("");
 let info = ref(false);
+let recarga = ref(true);
 
-//Metodos
+
+//Variables privadas
+let _profesores = ref([]);
+let _tramos = ref([]);
+
 const getTeacher = async () =>{
     const data = await getTeachers();
     let arrayProfes = [];
+    let stringProfes = [];
     selector.value = true;
     for(let i=0;i<data.length;i++)
     {
-        arrayProfes.push(data[i].nombre+" "+data[i].primerApellido+" "+data[i].segundoApellido);
+        let profe = new Profesor(data[i].nombre,data[i].primerApellido,data[i].segundoApellido);
+        arrayProfes.push(profe);
+        stringProfes.push(profe.nombre+" "+profe.primerApellido+" "+profe.segundoApellido);
     }
     
-    profesores = ref(arrayProfes);
-    selector.value = false;
+    _profesores = ref(arrayProfes);
+    profesores = ref(stringProfes);
+    recarga.value = false;
 }
 
 const getHour = async () =>{
@@ -46,7 +58,22 @@ const getHour = async () =>{
     }
 
     horas = ref(arrayHoras);
-    selector.value = false;
+    recarga.value = false;
+}
+
+const getTramo = async () =>{
+    const data = await getTramos();
+
+    let array = [];
+
+    for(let i=0;i<data.length;i++)
+    {
+        let tramo = new Tramo(data[i].numTr,data[i].dayNumber,data[i].startHour,data[i].endHour);
+        array.push(tramo);
+    }
+
+    _tramos = ref(array);
+    recarga.value = false;
 }
 
 const getCourse = async () =>{
@@ -59,14 +86,11 @@ const getCourse = async () =>{
     }
 
     cursos = ref(arrayCursos);
-    selector.value = true
+    recarga.value = false
 }
 
 const getLocTeacher = async (nombre,apellidos)=>{
     const data = await getTeacherClassroom(nombre,apellidos);
-    let aula = "";
-    let curso = "";
-    console.log(data)
     if(typeof data == "undefined")
     {
         infoProfe.value = nombre+" "+apellidos;
@@ -75,13 +99,27 @@ const getLocTeacher = async (nombre,apellidos)=>{
     else
     {
         noAula.value = "";
-        aula += data.floor+"."+data.number;
-        curso = data.name;
-        infoProfe.value = nombre+" "+apellidos;
-        infoNumAula.value = aula;
-        infoNombreAula.value = curso;
+        infoProfe.value = "El profesor "+nombre+" "+apellidos;
+        infoNumAula.value = "Se encuentra en el aula "+data.floor+"."+data.number;
+        infoNombreAula.value = "Curso "+data.name;
     }
    
+}
+
+const getLocTeacherTramo = async (nombre,apellidos,tramo)=>{
+    const data = await getTeacherClassroomHora(nombre,apellidos,tramo);
+    if(typeof data == "undefined")
+    {
+        infoProfe.value = nombre+" "+apellidos+"\n en el tramo "+tramo.startHour+" - "+tramo.endHour;
+        noAula.value = "  No se encuentra ningun aula  ";
+    }
+    else
+    {
+        noAula.value = "";
+        infoProfe.value = "El profesor "+nombre+" "+apellidos+"\n en el tramo "+tramo.startHour+" - "+tramo.endHour;;
+        infoNumAula.value = "Se encuentra en el aula "+data.floor+"."+data.number;
+        infoNombreAula.value = "Curso "+data.name;
+    }
 }
 const mostrarDocente = ()=>{
     //Obtenemos el elemento selection por su id
@@ -92,39 +130,38 @@ const mostrarDocente = ()=>{
     const horaSelection = document.getElementById("hora");
     let hora = horaSelection.options[horaSelection.selectedIndex].text;
 
-    let nombreApellido = separadorNombre(profesor);
+    let nombreApellido = separadorNombre(profesor,_profesores.value);
     if(hora == "Ahora mismo")
     {
         getLocTeacher(nombreApellido[0],nombreApellido[1]);
         info.value = true;
     }
-
-    
-}
-watch(selector,(nuevo,viejo)=>
-{
-    if(!nuevo)
-    {
-        console.log("Informacion bloque profesores actualizada");
-        getTeacher();
-        getHour();
-        info.value = false;
-    }
     else
     {
-        console.log("Informacion bloque cursos actualizada");
-        getCourse();
-        info.value = false;
-    }
-});
-watch(info,(nuevo,viejo)=>
-{
-    if(nuevo)
-    {
-        info.value = false;
+        let tramo = getSpecificTramo(hora,_tramos.value);
+        getLocTeacherTramo(nombreApellido[0],nombreApellido[1],tramo);   
         info.value = true;
     }
+}
+
+//Metodos
+onMounted(async ()=>{
+    getTeacher();
+    getCourse();
+    getHour();
+    getTramo();
+});
+
+watch(recarga,(nuevo,viejo)=>{
+    
+    if(!nuevo);
+    {
+        recarga.value = true
+    }
+
 })
+
+
 </script>
 
 <template>
@@ -147,10 +184,10 @@ watch(info,(nuevo,viejo)=>
             </div>
        </header> 
         <br>
-        <main>
+        <main v-show="recarga">
             <div id="docente" >
                 <!-- Endpoints 7 y 8: introduce nombre y apellidos del profesor y devuelve aula dónde se encuentra y asignatura impartida -->
-                <div  id="docente-profesor" v-show="!selector">
+                <div  id="docente-profesor">
                 <label for="profesor">Profesor: </label>
                 <select  name="profesor" id="profesor">
                     <option value="default">Selecciona un profesor</option>
@@ -172,7 +209,7 @@ watch(info,(nuevo,viejo)=>
             </div>
 
         <!-- Endpoint 9: introduce nombre del curso y recibe nombre del profesor y asignatura impartida en el momento actual -->
-        <div id="docente-curso" v-show="selector">
+        <div id="docente-curso">
             <label for="curso">Curso: </label>
             <select name="curso" id="curso">
                 <option value="default">Selecciona un curso</option>
@@ -184,11 +221,11 @@ watch(info,(nuevo,viejo)=>
         <div id="info-aula" v-show="info">
             <div v-if="noAula==''">
                 <br>
-                <h3>El profesor {{ infoProfe }}</h3>
+                <h3>{{ infoProfe }}</h3>
                 <br>
-                <h3>Se encuentra en el aula {{ infoNumAula }}</h3>
+                <h3>{{ infoNumAula }}</h3>
                 <br>
-                <h3>Curso {{ infoNombreAula }}</h3>
+                <h3>{{ infoNombreAula }}</h3>
                 <br>
             </div>
             <div v-else>
@@ -198,11 +235,6 @@ watch(info,(nuevo,viejo)=>
                 <br>
             </div>
         </div>
-    </div>
-    <br><br>
-    <div id="selector">
-        <button id="botonProfe" v-on:click="selector = false">Buscar por profesor</button>
-        <button id="botonCurso" v-on:click="selector = true">Buscar por curso</button>
     </div>
             <br><hr><br>
             <div id="docente-guardia"> <!-- Mostrará nombres del profesor que falta y profesor sustituto por cada hora y clase -->
@@ -339,23 +371,8 @@ a, li{
     display: none;
 }
 
-#selector {
-   width: 20%;
-   margin-left: 42.5%;
-}
-
-#selector button{
-    margin-left: 5%;
-    background-color:  rgb(31, 155, 203);
-    border-radius: 5px;
-}
-
-#selector button:hover{
-    background-color: hsl(197, 74%, 43%);
-}
-
-#selector button:active{
-    background-color: hsl(197, 74%, 43%);
+#titulo{
+    background-color: red;
 }
 
 #info-aula{
