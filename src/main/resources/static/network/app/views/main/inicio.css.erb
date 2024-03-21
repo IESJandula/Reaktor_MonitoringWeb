@@ -1,0 +1,83 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1, h2 {
+    font-weight: bold;
+}
+
+.contenedor {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+	background-color: white;
+} 
+
+.tarjeta {
+    display: flex;
+    align-items: center; 
+    padding: 0.5px;
+    margin: 15px;
+    width: calc(25% - 12px);
+    float: left;
+    box-sizing: border-box;
+	border-radius: 10px;
+	font-size: 12px;
+	background-color: #00ff00;
+    background-image: radial-gradient(circle, #00ED00 20%, transparent 70%); /* Gradiente radial hacia afuera */
+    box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.5);
+}
+
+#ip {
+    color: blue;
+}
+
+#mac {
+    font-size: 13px;
+}
+
+#tipo {
+    font-size: 13px;
+}
+
+#listaRedes {
+	font-size: 30px;
+	font-weight: bold;
+}
+
+#menu {
+    background-color: #007bff;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+#menu a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px;
+}
+
+#menu a:hover {
+    background-color: #0056b3;
+    color: #fff;
+}
+
+#busqueda-container {
+    margin-left: auto;
+}
+
+#busqueda {
+    width: 300px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 20px;
+}
+
+.tarjeta .contenedor {
+    flex: 1; /* Para que ocupe todo el espacio disponible */
+}
