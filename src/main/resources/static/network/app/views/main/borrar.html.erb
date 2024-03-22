@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="borrar.css">
+        <%= javascript_include_tag 'NetworkServer' %>
+        <title>Network Server</title>
+    </head>
+    <body>
+        <header>
+            <h1>Network Server</h1>
+
+            <div id="menu">
+                <%= link_to t("Inicio"), "/inicio"%>
+                <%= link_to t("Borrar Redes"), "/borrar"%>
+            </div>
+        </header>
+
+        <main>
+            <article>
+                <%= form_tag "/borrar", id: "form-borrar", method: :post do %>
+                    <%= label_tag :num_dias, "Número de días: ", for: "numero-dias", id: "texto-dias" %><br>
+                    <%= number_field_tag :num_dias, nil, min: 0, max: 31, step: 1, id: "numero-dias" %><br>
+                    <%= submit_tag "Borrar", id: "borrar-boton" %>
+                <% end %>
+            </article>
+        </main>
+	</body>
+</html>
