@@ -13,10 +13,6 @@
             <div id="menu">
                 <%= link_to t("Inicio"), "/inicio"%>
                 <%= link_to t("Borrar Redes"), "/borrar"%>
-                <div id="busqueda-container">
-                    <input type="text" id="busqueda" placeholder="Buscar..." onkeyup="filtrarTarjetas()">
-                </div>
-            </div>
         </header>
 
         <main>
@@ -43,16 +39,27 @@
                                         <% else %>
                                             <article class="tarjeta">
                                         <% end %>
-                                                <div class="contenedor">
-                                                    <h1 id="ip">IP: <%= equipo['ip'] %></h1>
-                                                    <% if equipo['tipo'].present? %>
-                                                        <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %> || <strong>TIPO:</strong> <%= equipo['tipo'] %></p>
-                                                    <% else %>
-                                                        <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %></p>
-                                                    <% end %>
-                                                    <p id="mac"><strong>FECHA:</strong> <%= red['fecha'] %></p>
+                                            <div class="contenedor" onmouseover="mostrarInformacion(this)" onmouseout="ocultarInformacion()" data-so="<%= equipo['so'] %>" data-puertos="<%= equipo['puertos'] %>">
+                                                <h1 id="ip">IP: <%= equipo['ip'] %></h1>
+                                                <% if equipo['tipo'].present? %>
+                                                    <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %> || <strong>TIPO:</strong> <%= equipo['tipo'] %></p>
+                                                <% else %>
+                                                    <p id="mac"><strong>MAC:</strong> <%= equipo['mac'] %></p>
+                                                <% end %>
+                                                <p id="mac"><strong>FECHA:</strong> <%= red['fecha'] %></p>
+                                                <div id="informacionOculta" style="display: none;">
+                                                    <p id="so"><strong>SO:</strong> <%= equipo['so'] %></p>
+                                                    <p id="puertos"><strong>Puertos:</strong></p>
+                                                    <ul id="listaPuertos">
+                                                        <% equipo['puertos'].each do |puerto| %>
+                                                            <li><strong>Número:</strong> <%= puerto['puertoId']['numero'] %>, <strong>Nombre:</strong> <%= puerto['nombre'] %></li>
+                                                        <% end %>
+                                                    </ul>
+                                                    <p id="idEquipo"><strong>ID Equipo:</strong> <%= equipo['id'] %></p>
                                                 </div>
-                                            </article>
+                                            </div>
+                                            <div id="informacionTarjeta" class="informacion-tarjeta" style="display: none;"></div>
+                                        </article>
                                     <% end %>
                                 <% end %>
                             <% end %>

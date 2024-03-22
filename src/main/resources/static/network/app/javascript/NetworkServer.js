@@ -11,34 +11,21 @@ function toggleArticulos(element)
     }
 }
 
-function filtrarTarjetas() 
-{
-  var input, filter, ul, li, article, h1, p, i, txtValue;
-  input = document.getElementById('busqueda');
-  filter = input.value.toUpperCase();
-  ul = document.getElementById("listaRedes");
-  li = ul.getElementsByTagName('li');
+function mostrarInformacion(contenedor) {
+  var informacionOculta = contenedor.querySelector('#informacionOculta').innerHTML;
+  var informacionTarjeta = document.getElementById('informacionTarjeta');
+  var informacionActual = contenedor.innerHTML;
+  
+  // Agregar la información básica de la tarjeta actual
+  informacionTarjeta.innerHTML = informacionActual;
 
-  for (i = 0; i < li.length; i++) 
-  {
-    article = li[i].getElementsByClassName("tarjeta");
-    for (var j = 0; j < article.length; j++)
-    {
-      h1 = article[j].getElementsByTagName("h1")[0];
-      p = article[j].getElementsByTagName("p");
-      txtValue = h1.textContent || h1.innerText;
-      for (var k = 0; k < p.length; k++)
-      {
-        txtValue += p[k].textContent || p[k].innerText;
-      }
-      if (txtValue.toUpperCase().indexOf(filter) > -1) 
-      {
-          article[j].style.display = "";
-      } 
-      else 
-      {
-          article[j].style.display = "none";
-      }
-    }
-  }
+  // Mostrar la información oculta del equipo actual
+  informacionTarjeta.innerHTML += informacionOculta;
+  
+  informacionTarjeta.style.display = 'block';
+}
+
+function ocultarInformacion() {
+  var informacionTarjeta = document.getElementById('informacionTarjeta');
+  informacionTarjeta.style.display = 'none';
 }

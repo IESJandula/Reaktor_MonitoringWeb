@@ -20,8 +20,14 @@
         <main>
             <article>
                 <%= form_tag "/borrar", id: "form-borrar", method: :post do %>
-                    <%= label_tag :num_dias, "Número de días: ", for: "numero-dias", id: "texto-dias" %><br>
-                    <%= number_field_tag :num_dias, nil, min: 0, max: 31, step: 1, id: "numero-dias" %><br>
+                    <%= label_tag :borrar_desde, "Borrar desde: ", for: "borrar-desde", id: "texto-borrar-desde" %><br>
+                    <select name="borrar_desde" id="borrar-desde">
+                        <option value="1">De ayer hacia atrás</option>
+                        <option value="3">De tres días hacia atrás</option>
+                        <option value="7">De una semana hacia atrás</option>
+                        <option value="31">De un mes hacia atrás</option>
+                        <option value= "-1">Todo</option>
+                    </select><br>
                     <%= submit_tag "Borrar", id: "borrar-boton" %>
                 <% end %>
             </article>
