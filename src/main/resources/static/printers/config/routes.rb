@@ -3,6 +3,8 @@ Rails.application.routes.draw do
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
+  match '/home', controller: 'cors', action: 'cors_preflight_check', via: [:options]
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Defines the root path route ("/")
@@ -10,7 +12,7 @@ Rails.application.routes.draw do
   root to: "main#home"
 
   # Defines the path of the home page (root)
-  get "home", to: "main#home"
+  post "home", to: "main#home"
 
   # Defines the path of the sendPdf page
   get "uploadPdf", to: "main#uploadPdf", as: :uploadPdf_page

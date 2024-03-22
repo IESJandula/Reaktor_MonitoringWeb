@@ -16,19 +16,33 @@ window.addEventListener('DOMContentLoaded', async e =>
 
 async function openPrinters()
 {
-    response = await fetch('http://localhost:3000',
-    {
-        method:'POST',//Informamos de que se utilizara una llamada de metodo post
-        headers:{//Con los headers decimos que se utiliza json es muy importante
-            'Content-Type':'application/json'
-        },
-        body: JSON.stringify( //Convertimos a json
-            { 
-            username: userName.innerHTML, //Para la clave username valor username
-            roles: roles.innerHTML //Para la clave password el valor password
-        })
-    })
-        
-    //Convertimos a json datos planos y guardamos en una variable que mostramos por consola
-    datos = await response.json()
+	var mapForm = document.createElement("form");
+    mapForm.target = "userInfo";
+    mapForm.method = "POST";
+    mapForm.action = "http://localhost:3000/home";
+	
+    var userNameInput = document.createElement("input");
+    userNameInput.type = "text";
+    userNameInput.name = "username";
+    userNameInput.value = userName.innerHTML;
+    mapForm.appendChild(userNameInput);
+    
+    var userRoleInput = document.createElement("input");
+    userRoleInput.type = "text";
+    userRoleInput.name = "roles";
+    userRoleInput.value = roles.innerHTML;
+    mapForm.appendChild(userRoleInput);
+	
+    document.body.appendChild(mapForm);
+
+    map = window.open("", "userInfo", "status=0,title=0,height=600,width=800,scrollbars=1");
+	
+	if (map)
+	{
+	    mapForm.submit();
+	}
+	else
+	{
+	    alert('You must allow popups for this map to work.');
+	}
 }

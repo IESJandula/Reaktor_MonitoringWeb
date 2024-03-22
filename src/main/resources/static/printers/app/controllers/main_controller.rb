@@ -19,14 +19,17 @@ class MainController < ApplicationController
       # The faces of copies from the web form
       @faces = params[:selected_both]
 
+      
+
       # Ensure @file is an UploadedFile object
       if @file.is_a?(ActionDispatch::Http::UploadedFile)
         begin
           response = RestClient.post(
             "http://192.168.1.215:8081/print",
-            { file: @file, printerName: @printer, numCopies: @numCopies, color: @color, orientation: @orientation, faces: @faces, user: "Sutil" },
+            { file: @file, printerName: @printer, numCopies: @numCopies, color: @color, orientation: @orientation, faces: @faces, user: $user },
             multipart: true
           )
+          puts @result
           puts response.code
 
         rescue RestClient::ExceptionWithResponse => e
@@ -35,25 +38,25 @@ class MainController < ApplicationController
       else
         puts "Invalid file format or file missing"
       end
-      redirect_to root_path
+      redirect_back(fallback_location: root_path)
     else
       puts "No se realizo la petición, parametro vacio"
     end
   end
-
+    
   # home control logic
   def home
+    $user = params[:username]
     begin
       response = RestClient.get(
         "http://192.168.1.215:8081/get/user/prints",
-        params: {user: "Sutil"}
+        params: {user: $user}
       ) 
       @info = PrintAction.from_json!(response.body)
-      puts @info
       puts response.code
     rescue RestClient::ExceptionWithResponse => e
       puts "Error: #{e.response}"
-    end    
+    end
   end
   
   # uploadPdf control logic
