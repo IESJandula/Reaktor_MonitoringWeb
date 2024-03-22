@@ -19,7 +19,7 @@ async function openPrinters()
 	var mapForm = document.createElement("form");
     mapForm.target = "userInfo";
     mapForm.method = "POST";
-    mapForm.action = "http://localhost:3000/home";
+    mapForm.action = "http://localhost:3000/user";
 	
     var userNameInput = document.createElement("input");
     userNameInput.type = "text";

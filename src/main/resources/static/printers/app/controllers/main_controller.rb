@@ -2,6 +2,11 @@
 # Main controller 
 class MainController < ApplicationController
   
+  def user
+    $user = params[:username]
+    redirect_to home_path
+  end
+
   # postPdf control 
   def postPdf
     if params[:exampleFormControlFile1].present?
@@ -38,15 +43,15 @@ class MainController < ApplicationController
       else
         puts "Invalid file format or file missing"
       end
-      redirect_back(fallback_location: root_path)
+      redirect_to home_path
     else
       puts "No se realizo la petición, parametro vacio"
+      redirect_to "/uploadPdf", notice: "No has subido un archivo pdf."     
     end
   end
     
   # home control logic
   def home
-    $user = params[:username]
     begin
       response = RestClient.get(
         "http://192.168.1.215:8081/get/user/prints",

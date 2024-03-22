@@ -9,10 +9,12 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
-  root to: "main#home"
+  root to: "main#user"
+
+  post "user", to: "main#user"
 
   # Defines the path of the home page (root)
-  post "home", to: "main#home"
+  get "home", to: "main#home",  as: :home_page
 
   # Defines the path of the sendPdf page
   get "uploadPdf", to: "main#uploadPdf", as: :uploadPdf_page
