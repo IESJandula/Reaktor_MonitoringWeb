@@ -50,7 +50,7 @@ export const getHours = async ()=>{
 export const getCourses = async ()=>{
     try
     {
-        let url = "http://localhost:8088/horarios/get/courses";
+        let url = "http://localhost:8088/horarios/get/coursenames";
         const response = await fetch(url);
         if(!response.ok)
         {
@@ -140,6 +140,28 @@ export const getTeacherClassroomHora = async (nombre,apellido,tramo)=>{
         }
 
         return await response.json();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+}
+
+export const getClassroomCourse = async (curso)=>{
+    try
+    {
+        const param = {
+            courseName: curso
+        }
+
+        let url = "http://localhost:8088/horarios/get/classroomcourse?"+new URLSearchParams(param).toString();
+
+        const response = await  fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("Cursos no cargados o mal introducidos")
+        }
     }
     catch(error)
     {

@@ -1,8 +1,8 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import { getTeachers,getHours,getCourses,getTramos,getTeacherClassroom,getTeacherClassroomHora } from '@/api/peticiones';
+import { getTeachers,getHours,getCourses,getTramos,getTeacherClassroom,getTeacherClassroomHora,getClassroomCourse } from '@/api/peticiones';
 import { useRouter } from 'vue-router';
-import { separadorNombre,getSpecificTramo } from '../js/utils.js';
+import { separadorNombre,getSpecificTramo,getOldTramo } from '../js/utils.js';
 import { Profesor } from '../models/profesores.js';
 import { Tramo } from '../models/tramos.js';
 //Instancia del router para cambiar de componente
@@ -26,11 +26,12 @@ let noAula = ref("");
 let info = ref(false);
 let recarga = ref(true);
 
-
 //Variables privadas
 let _profesores = ref([]);
 let _tramos = ref([]);
+let _usoFecha = false;
 
+//Metodos
 const getTeacher = async () =>{
     const data = await getTeachers();
     let arrayProfes = [];
@@ -82,7 +83,7 @@ const getCourse = async () =>{
     selector.value = false;
     for(let i = 0;i<data.length;i++)
     {
-        arrayCursos.push(data[i].name);
+        arrayCursos.push(data[i].nombre);
     }
 
     cursos = ref(arrayCursos);
@@ -93,13 +94,13 @@ const getLocTeacher = async (nombre,apellidos)=>{
     const data = await getTeacherClassroom(nombre,apellidos);
     if(typeof data == "undefined")
     {
-        infoProfe.value = nombre+" "+apellidos;
+        infoProfe.value = "El profesor/a "+nombre+" "+apellidos;
         noAula.value = "  No se encuentra ningun aula  ";
     }
     else
     {
         noAula.value = "";
-        infoProfe.value = "El profesor "+nombre+" "+apellidos;
+        infoProfe.value = "El profesor/a "+nombre+" "+apellidos;
         infoNumAula.value = "Se encuentra en el aula "+data.floor+"."+data.number;
         infoNombreAula.value = "Curso "+data.name;
     }
@@ -110,18 +111,28 @@ const getLocTeacherTramo = async (nombre,apellidos,tramo)=>{
     const data = await getTeacherClassroomHora(nombre,apellidos,tramo);
     if(typeof data == "undefined")
     {
-        infoProfe.value = nombre+" "+apellidos+"\n en el tramo "+tramo.startHour+" - "+tramo.endHour;
-        noAula.value = "  No se encuentra ningun aula  ";
+        const fecha = document.getElementById("dia");
+        infoProfe.value = _usoFecha ? "El profesor/a "+nombre+" "+apellidos+" el dia "+fecha.value : "El profesor/a "+nombre+" "+apellidos;
+        noAula.value = "En el tramo "+tramo.startHour+" - "+tramo.endHour+" no se encuentra ningun aula ";
     }
     else
     {
+        const fecha = document.getElementById("dia");
         noAula.value = "";
-        infoProfe.value = "El profesor "+nombre+" "+apellidos+"\n en el tramo "+tramo.startHour+" - "+tramo.endHour;;
-        infoNumAula.value = "Se encuentra en el aula "+data.floor+"."+data.number;
+        infoProfe.value = _usoFecha ? "El profesor/a "+nombre+" "+apellidos+" el dia "+fecha.value : "El profesor/a "+nombre+" "+apellidos;
+        infoNumAula.value = "En el tramo "+tramo.startHour+" - "+tramo.endHour+" "+"se encuentra en el aula "+data.floor+"."+data.number;
         infoNombreAula.value = "Curso "+data.name;
     }
 }
+
+const getLocTeacherCourse = async(curso) =>{
+    const data = await getClassroomCourse(curso);
+    console.log(data);
+}
+
 const mostrarDocente = ()=>{
+    //Colocamos la fecha por defecto a false a no ser que se utilice despues
+    _usoFecha = false;
     //Obtenemos el elemento selection por su id
     const profeSelection = document.getElementById("profesor");
     //Sacamos su valor en bruto
@@ -130,21 +141,71 @@ const mostrarDocente = ()=>{
     const horaSelection = document.getElementById("hora");
     let hora = horaSelection.options[horaSelection.selectedIndex].text;
 
+    //Obtenemos la fecha en caso de que este introducida para sacar el dia exacto
+    const fecha = document.getElementById("dia");
+    let fechaString = fecha.value;
     let nombreApellido = separadorNombre(profesor,_profesores.value);
-    if(hora == "Ahora mismo")
+
+    if(profesor=="Selecciona un profesor")
+    {
+       alert("No se ha seleccionado ningun profesor");
+    }
+    else if(hora == "Ahora mismo")
     {
         getLocTeacher(nombreApellido[0],nombreApellido[1]);
         info.value = true;
+        
     }
     else
     {
-        let tramo = getSpecificTramo(hora,_tramos.value);
-        getLocTeacherTramo(nombreApellido[0],nombreApellido[1],tramo);   
-        info.value = true;
+        if(fechaString!="")
+        {
+            let tramo = getOldTramo(hora,fechaString,_tramos.value);
+            if(tramo.numTr!="")
+            {
+                getLocTeacherTramo(nombreApellido[0],nombreApellido[1],tramo);
+                _usoFecha = true;   
+                info.value = true;
+            }
+            else
+            {
+                info.value = false;
+            }
+        }
+        else
+        {
+            let tramo = getSpecificTramo(hora,_tramos.value);
+            getLocTeacherTramo(nombreApellido[0],nombreApellido[1],tramo);   
+            info.value = true;
+        }
+        
     }
 }
 
-//Metodos
+const mostrarDocenteCurso = ()=>{
+    const cursoSelection = document.getElementById("curso");
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    getLocTeacherCourse(curso);
+}
+
+const onchangeHour = ()=>{
+    const horaSelection = document.getElementById("hora");
+    let hora = horaSelection.options[horaSelection.selectedIndex].text;
+
+    const fecha = document.getElementById("dia");   
+
+    if(hora!="Ahora mismo")
+    {
+        fecha.removeAttribute("disabled")
+    }
+    else
+    {
+        fecha.setAttribute("disabled","true");
+    }
+   
+}
+
 onMounted(async ()=>{
     getTeacher();
     getCourse();
@@ -195,15 +256,14 @@ watch(recarga,(nuevo,viejo)=>{
                 </select>
                 <br><br>
                 <label for="hora">Tramo Horario: </label> <!-- Por defecto: ahora mismo. Si no se toca nada, el sistema usará la hora actual del servidor -->
-                <select name="hora" id="hora">
+                <select name="hora" id="hora" v-on:change="onchangeHour">
                     <option value="default">Ahora mismo</option>
                     <option v-for="i in horas" value="{{ i }}">{{ i }}</option>
                     
                 </select>
                 <br><br>
                 <label for="dia">Día: </label>
-                <input type="date" id="dia"> <!-- Aparece por defecto el día actual -->
-                <!--<script>document.getElementById("dia").valueAsDate = new Date();</script>-->
+                <input type="date" id="dia" disabled> 
                 <br><br>
                 <button class="button-docente" v-on:click="mostrarDocente">Buscar por docente</button>
             </div>
@@ -216,7 +276,7 @@ watch(recarga,(nuevo,viejo)=>{
                 <option v-for="i in cursos" value="{{ i }}">{{ i }}</option>
             </select>
             <br><br>
-            <button class="button-docente">Buscar por curso</button> <!-- Devolverá qué profesor se encuentra en el aula actualmente o en el tramo horario elegido y asignatura impartida -->
+            <button class="button-docente" v-on:click="mostrarDocenteCurso">Buscar por curso</button> <!-- Devolverá qué profesor se encuentra en el aula actualmente o en el tramo horario elegido y asignatura impartida -->
         </div>
         <div id="info-aula" v-show="info">
             <div v-if="noAula==''">
@@ -229,9 +289,9 @@ watch(recarga,(nuevo,viejo)=>{
                 <br>
             </div>
             <div v-else>
-                <h3>El profesor {{ infoProfe }}</h3>
+                <h3>{{ infoProfe }}</h3>
                 <br>
-                <h3 style="text-align: center;">No se encuentra ningun aula</h3>
+                <h3 style="text-align: center;">{{ noAula }}</h3>
                 <br>
             </div>
         </div>
