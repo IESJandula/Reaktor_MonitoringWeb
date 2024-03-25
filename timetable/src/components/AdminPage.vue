@@ -1,5 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
+import { cargarXml,cargarCsvAlumnos } from '@/api/peticiones'
+import { ref, watch } from 'vue';
 //Instancia del router
 const router = useRouter();
 //Acceso al body
@@ -8,6 +10,106 @@ body.style.backgroundColor = "rgb(241, 241, 224)";
 body.style.padding = 0;
 body.style.margin = 0;
 
+//Instancia de variables
+const colorFichero = ref("");
+const infoFicheroXml = ref("");
+const infoFicheroCsvStudents = ref("");
+const recarga = ref(true);
+/**
+ * Evento que se encarga de recoger el fichero cargado por el
+ * administrador para enviarlo posteriormente al servidor
+ */
+const cargarCentro = ()=>{
+    const fileName = document.getElementById("confXml");
+
+    if (typeof fileName.files[0]=="undefined")
+    {
+        infoFicheroCsvStudents.value = "";
+        infoFicheroXml.value = "No se ha seleccionado ningun fichero";
+        colorFichero.value = "color:darkgoldenrod;";
+        recarga.value = false;
+    }
+    else
+    {
+        let file = new FormData();
+
+        file.append('xmlFile',fileName.files[0]);
+
+        cargarDatosCentro(file,fileName.files[0].name);
+    }
+}
+
+const cargarAlumnos = ()=>{
+    const fileName = document.getElementById("students");
+
+    if(typeof fileName.files[0]=="undefined")
+    {
+        infoFicheroXml.value = "";
+        infoFicheroCsvStudents.value = "No se ha seleccionado ningun fichero";
+        colorFichero.value = "color:darkgoldenrod;";
+        recarga.value = false;
+    }
+    else
+    {
+        let file = new FormData();
+
+        file.append("csvFile",fileName.files[0]);
+
+        cargarDatosAlumnos(file,fileName.files[0].name)
+    }
+}
+
+/**
+ * Metodo que llama a la peticion donde se envia el fichero xml
+ * que el administrador proporciona al servidor, ademas avisa al 
+ * administrador si el fichero esta bien formado o no
+ * @param {FormData} file 
+ * @param {string} fileName
+ */
+const cargarDatosCentro = async (file,fileName) =>{
+    const data = await cargarXml(file);
+
+    if(data)
+    {
+        infoFicheroCsvStudents.value = "";
+        infoFicheroXml.value = "Fichero "+fileName+" cargado correctamente";
+        colorFichero.value = "color:forestgreen;";
+        recarga.value = false;
+    }
+    else
+    {
+        infoFicheroCsvStudents.value = "";
+        infoFicheroXml.value = "El fichero cargado es erroneo, comprueba que contiene la estructura correcta del centro";
+        colorFichero.value = "color:darkred;";
+        recarga.value = false;
+    }
+}
+
+const cargarDatosAlumnos = async (file,fileName) => {
+    const data = await cargarCsvAlumnos(file);
+
+    if(data)
+    {
+        infoFicheroXml.value = "";
+        infoFicheroCsvStudents.value = "Fichero "+fileName+" cargado correctamente";
+        colorFichero.value = "color:forestgreen;";
+        recarga.value = false;
+    }
+    else
+    {
+        infoFicheroXml.value = "";
+        infoFicheroCsvStudents.value = "El fichero cargado es erroneo, comprueba que la cabecera del fichero sea Alumno/a y Unidad o Curso y que los alumnos esten bien formados";
+        colorFichero.value = "color:darkred;";
+        recarga.value = false;
+    }
+}
+
+watch(recarga,(nuevo,viejo)=>{
+    if(!nuevo)
+    {
+        recarga.value = true;
+    }
+})  
 </script>
 
 <template>
@@ -30,14 +132,15 @@ body.style.margin = 0;
             </div>
        </header> 
             <!-- Fondo de la pagina -->
-            <div class="fondo_cuadrado">
+            <div v-show="recarga" class="fondo_cuadrado">
                 <!-- Formulario -->
                 <section class="seccion1">
                     <label  for="Configuración en xml">Cargar configuración en xml:</label>
                     <div class="marco_interno">
                         <input type="file" id="confXml" placeholder="Configuración..." accept=".xml">
+                        <h3 v-bind:style="colorFichero" v-show="infoFicheroXml!=''">{{infoFicheroXml}}</h3>
                     </div>
-                    <button  id="alinear">Cargar</button>
+                    <button  id="alinear" v-on:click="cargarCentro">Cargar</button>
                 </section>
                 <section class="seccion1">
                     <label  for="Roles csv">Cargar roles en csv:</label>
@@ -47,11 +150,12 @@ body.style.margin = 0;
                     <button  id="alinear">Cargar</button>
                 </section>
                 <section class="seccion1">
-                    <label for="Alumnos en xml">Cargar alumnos en xml:</label>
+                    <label for="Alumnos en csv">Cargar alumnos en csv:</label>
                     <div class="marco_interno">
-                        <input type="file" placeholder="Alumnos..." accept=".xml">
+                        <input type="file" id="students" placeholder="Alumnos..." accept=".csv">
+                        <h3 v-bind:style="colorFichero" v-show="infoFicheroCsvStudents!=''">{{infoFicheroCsvStudents}}</h3>
                     </div>
-                    <button  id="alinear">Cargar</button>
+                    <button id="alinear" v-on:click="cargarAlumnos()">Cargar</button>
                 </section>
             </div>
 </template>
@@ -79,20 +183,17 @@ body.style.margin = 0;
 .fondo{
     background-color: #f2f2f2;
 }
+
 .fondo_cuadrado{
     background-color: white;
     width: 80%;
-    height: auto;
     margin-left: 10%;
     box-shadow: 0 0 3px -1px;
 }
-#cuadrado{
-    display: flex;
-    justify-content: center;
-}
+
 .seccion1{
-    height: 108px;
-    max-height: 115px;
+    height: 130px;
+    max-height: 135px;
     margin-left: 2%;
     margin-right: 2%;
     margin-top: 1%;
