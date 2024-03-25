@@ -1,16 +1,71 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { getTeachers,getCourses } from '@/api/peticiones';
+import { Profesor } from '@/models/profesores';
 
 //Instancia del router
 const router = useRouter();
+//Acceso al body
 const body = document.getElementById("body");
 body.style.backgroundColor = "white";
 body.style.padding = 0;
 body.style.margin = 0;
 
 //Instancia de variables
-let cambioHorario = ref(false);
+let profesores = ref([]);
+let cursos = ref([]);
+let recarga = ref(true);
+//Variables privadas
+let _profesores = ref([]);
+
+//Metodos
+const cargarProfesores = async() =>{
+    //Llamada a la peticion
+    const data = await getTeachers();
+    //Array de objetos
+    let arrayProfes = [];
+    //Array de nombres em formato string
+    let stringProfes = [];
+    //Iterador de los datos que guarda los objetos y los nombres
+    for(let i=0;i<data.length;i++)
+    {
+        let profe = new Profesor(data[i].nombre,data[i].primerApellido,data[i].segundoApellido);
+        arrayProfes.push(profe);
+        stringProfes.push(profe.nombre+" "+profe.primerApellido+" "+profe.segundoApellido);
+    }
+    
+    _profesores = ref(arrayProfes);
+    profesores = ref(stringProfes);
+    //Llamada a la recarga de la pagina
+    recarga.value = false;
+}
+
+const cargarCursos = async () =>{
+    //Llamada a la peticion
+    const data = await getCourses();
+    //Array cursos en formato string
+    let arrayCursos = [];
+    //Iterador de los datos que guarda los cursos
+    for(let i = 0;i<data.length;i++)
+    {
+        arrayCursos.push(data[i].nombre);
+    }
+
+    cursos = ref(arrayCursos);
+    //Llamada a la recarga de la pagina
+    recarga.value = false
+}
+onMounted(async ()=>{
+    cargarProfesores();
+    cargarCursos();
+})
+watch(recarga,(nuevo,viejo)=>{
+    if(!nuevo)
+    {
+        recarga.value = true;
+    }
+})
 </script>
 
 <template>
@@ -33,65 +88,49 @@ let cambioHorario = ref(false);
             </ul>
         </div>
    </header> 
-    <div id="Horario">
-        <div id="horario-seleccionar-Profesor" v-show="!cambioHorario">
+    <div id="Horario" v-show="recarga">
+        <div id="horario-seleccionar-Profesor">
             <form action="#">
                 <label for="Profesores">Profesores</label>
                 <p></p>
                 <select name="Profesores-Horarios" id="Profesores">
-                  <option value="Francisco">Francisco Manuel Benitez Chico </option>
-                  <option value="Vicente">Vicente Serrano Martínez </option>
-                  <option value="Jose">Jose Antonio Sánchez Garcia</option>
-                  <option value="Carlos">Carlos Cano Ladera</option>
-                  <option value="Raquel">Raquel Molina Mesa</option>
+                  <option selected>Selecciona un profesor</option>
+                  <option v-for="i in profesores">{{ i }}</option>
                 </select>
                 <p></p>
-                <input type="submit" value="Enviar" />
+                <button type="submit">Enviar</button>
           </form>
         </div>
         
-        <div id="horario-todos-Profesores" v-show="!cambioHorario">
+        <div id="horario-todos-Profesores">
             <p>Horario de todos los Profesores</p>
             <form action="">
                 <button id="button-Horario-Profesores"> Ver </button>
             </form>
         </div>
         
-        <div id="horario-seleccionar-grupo" v-show="cambioHorario">
+        <div id="horario-seleccionar-grupo">
             <form action="#">
                 <label for="Grupos">Grupos</label>
                 <p></p>
                 <select name="Grupos-Horarios" id="Grupos">
-                  <option value="1ESO">1º ESO </option>
-                  <option value="2ESO">2º ESO </option>
-                  <option value="3ESO">3º ESO </option>
-                  <option value="4ESO">4º ESO </option>
-                  <option value="1BACH">1º BACH </option>
-                  <option value="2Bach">2º BACH </option>
-                  <option value="1DAM">1º DAM </option>
-                  <option value="1DAW">1º DAW </option>
-                  <option value="2DAM">2º DAM </option>
-                  <option value="2DAW">2º DAW </option>
+                  <option selected>Seleccione un grupo </option>
+                  <option v-for="i in cursos">{{ i }} </option>
                 </select>
                 <p></p>
                 <input type="submit" value="Enviar" />
           </form>
         </div>
-        
-        <div id="horario-todos-grupos" v-show="cambioHorario">
+
+        <div id="horario-todos-grupos">
             <p>Horario de todos los Grupos</p>
             <form action="">
                 <button id="button-Horario-Grupo"> Ver </button>
             </form>
         </div>
 
-    </div>
-    <div id="botones">
-            <button v-on:click="cambioHorario = false">Horarios Profesores</button>
-            <button v-on:click="cambioHorario = true">Horarios Grupos</button>
-        </div>
-        
-    <div id="horarios-container">
+    </div>   
+    <div id="horarios-container" v-show="recarga">
         <embed type="text/html" src="/Horario.pdf"  width="85%" height="900px">
     </div>
    
@@ -127,7 +166,7 @@ let cambioHorario = ref(false);
     border: 2px solid black;
     min-width: 250px;
     max-width: 100%;
-    margin-left: 25%;
+    margin: 5px;
 
 }
 
@@ -139,7 +178,6 @@ let cambioHorario = ref(false);
     min-width: 225px;
     max-width: 100%;
     margin: 5px;
-    margin-right: 25%;
 
 }
 
@@ -151,7 +189,7 @@ let cambioHorario = ref(false);
     min-width: 100px;
     max-width: 100%;
     margin: 5px;
-    margin-left: 25%;
+
 }
 
 #horario-todos-grupos{
@@ -162,39 +200,15 @@ let cambioHorario = ref(false);
     min-width: 150px;
     max-width: 100%;
     margin: 5px;
-    margin-right: 25%;
 
 }
 
 #horarios-container{
     min-height: 100%;
+    text-align: center;
     margin-left: 10%;
-    margin-top: 2.5%;
-}
-
-#botones{
-    width: 18%;
-    margin-left: 42%;
- 
-}
-
-#botones button{
-    margin-left: 5%;
-    background-color:  rgb(31, 155, 203);
-    border-radius: 5px;
-}
-
-#botones button:hover{
-    background-color: hsl(197, 74%, 43%);
-}
-
-#botones button:active{
-    background-color: hsl(197, 74%, 43%);
-}
-
-#botones button{
-    margin-top: 25%;
-   margin-left: 5%;
+    margin-right: 10%;
+    margin-top: 5%;
 }
 
 *{
