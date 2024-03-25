@@ -49,18 +49,30 @@ export const getSpecificTramo = (hora,tramos)=>{
     //Instanciamos la fecha actual
     let date = new Date();
 
-    //Buscamos el tramo y se lo asignamos al que queremos devolver
-    for(let i=0;i<tramos.length;i++)
+    //Comprobamos que los dias no sean sabado o domingo
+    if(date.getUTCDay()==6)
     {
-        tramos[i].startHour = tramos[i].startHour.trim();
-        tramos[i].endHour = tramos[i].endHour.trim();
-
-        if(tramos[i].startHour==array[0] && tramos[i].endHour==array[1] && tramos[i].dayNumber==(date.getUTCDay()+""))
+        alert("Estas busacando un profesor en sabado")
+    }
+    else if(date.getUTCDay()==0)
+    {
+        alert("Estas buscando un profesor en domingo")
+    }
+    else
+    {   
+        //Buscamos el tramo y se lo asignamos al que queremos devolver
+        for(let i=0;i<tramos.length;i++)
         {
-            tramo = tramos[i];
+            tramos[i].startHour = tramos[i].startHour.trim();
+            tramos[i].endHour = tramos[i].endHour.trim();
+
+            if(tramos[i].startHour==array[0] && tramos[i].endHour==array[1] && tramos[i].dayNumber==(date.getUTCDay()+""))
+            {
+                tramo = tramos[i];
+            }
         }
     }
-
+    
     return tramo;
 }
 
@@ -111,4 +123,37 @@ export const getOldTramo = (hora,dia,tramos)=>{
     }
 
     return tramo;
+}
+/**
+ * Metodo que recoge el dia la hora y los minutos actuales para la localizacion
+ * a tiempo real de un profesor buscandolo por su curso
+ * @returns booleano que determina si se debe de mostrar o no un PopUp informativo
+ */
+export const checkHoraDia = () =>
+{
+    let mostrar = true;
+    let date = new Date();
+
+    if(date.getUTCDay()==6)
+    {
+        alert("No se puede localizar un profesor en sabado");
+        mostrar = false;
+    }
+    else if(date.getUTCDay()==0)
+    {
+        alert("No se puede localizar un profesor en domingo");
+        mostrar = false;
+    }
+    else if(date.getHours()<8 && date.getMinutes<15)
+    {
+        alert("Se esta buscando un profesor antes del tramo inicial (8:15)");
+        mostrar = false;
+    }
+    else if(date.getHours()>14 && date.getMinutes<45)
+    {
+        alert("Se esta buscando un profesor antes del tramo inicial (14:45)");
+        mostrar = false;
+    }
+
+    return mostrar;
 }

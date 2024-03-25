@@ -63,6 +63,23 @@ export const getCourses = async ()=>{
         console.log(error);
     }
 }
+
+export const getStudentCourses = async ()=>{
+    try
+    {
+        let url = "http://localhost:8088/horarios/get/students-course";
+        const response = await fetch(url);
+        if(!response.ok)
+        {
+            throw new Error("No se ha cargado previamente ningun dato sobre los alumnos");
+        }
+        return await response.json();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+}
 /**
  * Metodo que realiza una peticion http al servidor para recoger 
  * informacion sobre los tramos horarios
@@ -154,14 +171,16 @@ export const getClassroomCourse = async (curso)=>{
             courseName: curso
         }
 
-        let url = "http://localhost:8088/horarios/get/classroomcourse?"+new URLSearchParams(param).toString();
+        let url = "http://localhost:8088/horarios/get/teachersubject?"+new URLSearchParams(param).toString();
 
         const response = await  fetch(url);
 
         if(!response.ok)
         {
-            throw new Error("Cursos no cargados o mal introducidos")
+            throw new Error("Cursos no cargados o mal introducidos");
         }
+
+        return await response.json();
     }
     catch(error)
     {
@@ -179,6 +198,30 @@ export const getPoints = async ()=>{
         if(!response.ok)
         {
             throw new Error("Error de servidor, no se pudo presentar la peticion")
+        }
+
+        return await response.json();
+    }
+    catch(error)
+    {
+        console.log(error)
+    }
+}
+
+export const getSortStudentsCourse = async (curso)=>{
+    try
+    {
+        const param = {
+            course: curso
+        }
+
+        let url = "http://localhost:8088/horarios/get/course/sort/students"+new URLSearchParams(param).toString();
+        
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("El curso no coincide o los alumnos no han sido cargados");
         }
 
         return await response.json();
