@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { getCourses,getPoints } from '@/api/peticiones';
+import { getStudentCourses,getPoints,getSortStudentsCourse } from '@/api/peticiones';
 import { ref,onMounted, watch } from 'vue';
 import { Puntos } from '../models/puntos.js'
 //Instancia del router
@@ -13,18 +13,19 @@ body.style.margin = 0;
 
 //Instancia de variables
 let cursos = ref([]);
+let alumnos = ref([]);
 let puntos = ref([]);
 let recarga = ref(true);
-
+let mostrarAlumnos = ref(false);
 //Variables privadas
 let _puntos = ref([]);
 
 const getCourse = async()=>{
-    const data = await getCourses();
+    const data = await getStudentCourses();
     let arrayCursos = [];
     for(let i = 0;i<data.length;i++)
     {
-        arrayCursos.push(data[i].name);
+        arrayCursos.push(data[i]);
     }
 
     cursos = ref(arrayCursos);
@@ -55,6 +56,35 @@ const cargarPuntos = async()=>{
     recarga.value = false;
 }
 
+const cargarAlumnos = async(curso)=>{
+    const data = await getSortStudentsCourse(curso);
+    let arrayAlumnos = [];
+
+    for(let i = 0;i<data.length;i++)
+    {
+        let nombre = data[i].name+" "+data[i].lastName;
+        arrayAlumnos.push(nombre);
+    }
+
+    alumnos = ref(arrayAlumnos);
+    recarga.value = false;
+}
+
+const onChangedCurso = ()=>{
+    const cursoSelection = document.getElementById("cursos");
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    if(curso=="Cursos")
+    {
+        mostrarAlumnos.value = false;
+    }
+    else
+    {
+        mostrarAlumnos.value = true;
+        cargarAlumnos(curso);
+        recarga.value = false;
+    }
+}
 onMounted(async ()=>{
     getCourse();
     cargarPuntos();
@@ -96,7 +126,7 @@ watch(recarga,(nuevo,viejo)=>{
         <div class="contenido">
 
             <div class="clases"> <!--Boton donde seleccionar el curso del alumno -->
-                <select class="form-select" aria-label="Default select example">
+                <select id="cursos" class="form-select" aria-label="Default select example" v-on:change="onChangedCurso">
                     <option selected>Cursos</option>
                     <option v-for="i in cursos">{{ i }}</option>
                 </select>
@@ -104,15 +134,8 @@ watch(recarga,(nuevo,viejo)=>{
     
             <div class="Alumnos"><!--Boton donde seleccionar el alumno, dependiendo del curso seleccionado -->
                 <select class="form-select" aria-label="Default select example">
-                    <option selected>Nombre y apellidos alumnos</option>
-                    <option value="1">Alumno1</option>
-                    <option value="2">Alumno2</option>
-                    <option value="3">Alumno3</option>
-                    <option value="4">Alumno4</option>
-                    <option value="5">Alumno5</option>
-                    <option value="6">Alumno6</option>
-                    <option value="7">Alumno7</option>
-                    <option value="8">Alumno8</option>
+                    <option v-show="!mostrarAlumnos" selected>Selecciona un curso</option>
+                    <option v-show="mostrarAlumnos" v-for="i in alumnos">{{ i }}</option>
                 </select>
             </div>
     

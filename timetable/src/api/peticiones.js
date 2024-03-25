@@ -215,7 +215,7 @@ export const getSortStudentsCourse = async (curso)=>{
             course: curso
         }
 
-        let url = "http://localhost:8088/horarios/get/course/sort/students"+new URLSearchParams(param).toString();
+        let url = "http://localhost:8088/horarios/get/course/sort/students?"+new URLSearchParams(param).toString();
         
         const response = await fetch(url);
 
@@ -229,5 +229,62 @@ export const getSortStudentsCourse = async (curso)=>{
     catch(error)
     {
         console.log(error)
+    }
+}
+/**
+ * Metodo que envia el fichero xml para configurar el centro
+ * @param {FormData} file 
+ * @returns true si el fichero ha sido cargado correctamente, false si no
+ */
+export const cargarXml = async (file) =>{
+    try
+    {
+        let url = "http://localhost:8088/horarios/send/xml";
+
+        const response = await fetch(url,{
+            method:"POST",
+            body:file
+        });
+
+        if(!response.ok)
+        {
+            throw new Error("El fichero xml es incorrecto");
+        }
+
+        return await true;
+    }
+    catch(error)
+    {
+        console.log(error);
+        return await false;
+    }
+}
+
+/**
+ * Metodo que envia el fichero csv para cargar los alumnos del centro
+ * @param {FormData} file 
+ * @returns true si el fichero ha sido cargado correctamente, false si no
+ */
+export const cargarCsvAlumnos = async (file) =>{
+    try
+    {
+        let url = "http://localhost:8088/horarios/send/csv-alumnos";
+
+        const response = await fetch(url,{
+            method:"POST",
+            body:file
+        });
+
+        if(!response.ok)
+        {
+            throw new Error("El fichero csv es incorrecto");
+        }
+
+        return await true;
+    }
+    catch(error)
+    {
+        console.log(error);
+        return await false;
     }
 }
