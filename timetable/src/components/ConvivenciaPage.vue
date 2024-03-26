@@ -5,7 +5,7 @@ import { ref,onMounted, watch } from 'vue';
 import { Puntos } from '../models/puntos.js'
 //Instancia del router
 const router = useRouter();
-//Acceso al index.html
+//Acceso al body
 const body = document.getElementById("body");
 body.style.backgroundColor = "skyblue";
 body.style.padding = 0;
@@ -20,22 +20,38 @@ let mostrarAlumnos = ref(false);
 //Variables privadas
 let _puntos = ref([]);
 
+//Metodos
+
+/**
+ * Metodo que recoge los cursos de los alumnos y manda una señal para recargar la pagina
+ */
 const getCourse = async()=>{
+    //Llamada a la peticion
     const data = await getStudentCourses();
+    //Array cursos en formato string
     let arrayCursos = [];
+    //Iterador de los datos que guarda los cursos
     for(let i = 0;i<data.length;i++)
     {
         arrayCursos.push(data[i]);
     }
 
     cursos = ref(arrayCursos);
+    //Llamada a la recarga de la pagina
     recarga.value = false;
 }
 
+/**
+ * Metodo que recoge la descripcion y puntaje de la sancion o logro que comete el alumno
+ */
 const cargarPuntos = async()=>{
+    //Llamada a la peticion
     const data = await getPoints();
+    //Array de objetos
     let arrayPuntos = [];
+    //Array de puntos en formato string
     let stringPuntos = [];
+    //Iterador de los datos que guarda los puntos
     for(let i = 0;i<data.length;i++)
     {
         let puntos = new Puntos(data[i].points,data[i].description);
@@ -53,13 +69,21 @@ const cargarPuntos = async()=>{
 
     puntos = ref(stringPuntos);
     _puntos = ref(arrayPuntos);
+    //Llamada a la recarga de la pagina
     recarga.value = false;
 }
 
+/**
+ * Metodo que recoge los nombres de los alumnos filtrados por el curso
+ * introducido como parametro
+ * @param {string} curso 
+ */
 const cargarAlumnos = async(curso)=>{
+    //Llamada a la peticion
     const data = await getSortStudentsCourse(curso);
+    //Array de alumnos en formato string 
     let arrayAlumnos = [];
-
+    //Iterador de los datos que guarda los alumnos
     for(let i = 0;i<data.length;i++)
     {
         let nombre = data[i].name+" "+data[i].lastName;
@@ -67,13 +91,20 @@ const cargarAlumnos = async(curso)=>{
     }
 
     alumnos = ref(arrayAlumnos);
+    //Llamada a la recarga de la pagina
     recarga.value = false;
 }
 
+/**
+ * Evento que comprueba cuando el curso cambia de valor para recargar los alumnos
+ */
 const onChangedCurso = ()=>{
+    //Obtenemos el elemento selection por su id
     const cursoSelection = document.getElementById("cursos");
+    //Sacamos su valor en bruto
     let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
 
+    //Si el valor cambia a Cursos no mostramos los alumnos
     if(curso=="Cursos")
     {
         mostrarAlumnos.value = false;
@@ -81,15 +112,24 @@ const onChangedCurso = ()=>{
     else
     {
         mostrarAlumnos.value = true;
+        //Llamada a la peticion
         cargarAlumnos(curso);
+        //Llamada a la recarga de la pagina
         recarga.value = false;
     }
 }
+
+/**
+ * Metodo que se encarga de recoger los datos al entrar en la pagina
+ */
 onMounted(async ()=>{
     getCourse();
     cargarPuntos();
 });
 
+/**
+ * Metodo observador que la variable nuevo (booleana) cambie par recargar la pagina
+ */
 watch(recarga,(nuevo,viejo)=>{
     if(!nuevo)
     {
