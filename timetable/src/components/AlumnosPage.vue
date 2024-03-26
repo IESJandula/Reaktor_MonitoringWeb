@@ -1,12 +1,68 @@
 <script setup>
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { getStudentCourses } from '@/api/peticiones';
 //Instancia del router
 const router = useRouter();
 const body = document.getElementById("body");
-body.style.backgroundColor = "rgb(230, 253, 253);";
+body.style.backgroundColor = "rgb(230, 253, 253)";
 body.style.padding = 0;
 body.style.margin = 0;
 
+//Instancia de variables
+let recarga = ref(true);
+let cursos = ref([]);
+let alumnos = ref([]);
+
+//Metodos
+
+/**
+ * Metodo que recoge los cursos de los alumnos y manda una señal para recargar la pagina
+ */
+const getCourse = async()=>{
+    //Llamada a la peticion
+    const data = await getStudentCourses();
+    //Array cursos en formato string
+    let arrayCursos = [];
+    //Iterador de los datos que guarda los cursos
+    for(let i = 0;i<data.length;i++)
+    {
+        arrayCursos.push(data[i]);
+    }
+
+    cursos = ref(arrayCursos);
+    //Llamada a la recarga de la pagina
+    recarga.value = false;
+}
+
+/**
+ * Metodo que recoge los nombres de los alumnos filtrados por el curso
+ * introducido como parametro
+ * @param {string} curso 
+ */
+ const cargarAlumnos = async(curso)=>{
+    //Llamada a la peticion
+    const data = await getSortStudentsCourse(curso);
+    //Array de alumnos en formato string 
+    let arrayAlumnos = [];
+    //Iterador de los datos que guarda los alumnos
+    for(let i = 0;i<data.length;i++)
+    {
+        let nombre = data[i].name+" "+data[i].lastName;
+        arrayAlumnos.push(nombre);
+    }
+
+    alumnos = ref(arrayAlumnos);
+    //Llamada a la recarga de la pagina
+    recarga.value = false;
+}
+
+watch(recarga,(nuevo,viejo) => {
+    if(!nuevo)
+    {
+        recarga.value = true;
+    }
+});
 </script>
 
 <template>
@@ -34,7 +90,7 @@ body.style.margin = 0;
             <h2>Info Alumnos</h2>
         </div>
 
-        <div class="container-table-info-alumnos">
+        <div class="container-table-info-alumnos" v-show="recarga">
 
             <div class="selectores">
                 <form>
@@ -114,7 +170,7 @@ body.style.margin = 0;
             <h2>Registrar ida y vuelta</h2>
         </div>
 
-        <div class="table-record-01">
+        <div class="table-record-01" v-show="recarga">
 
             <div class="configuration-header">
             
@@ -167,7 +223,7 @@ body.style.margin = 0;
             <h2>Estadísticas del alumno</h2>
         </div>
 
-        <div class="table-record-02">
+        <div class="table-record-02" v-show="recarga">
 
             <div class="configuration-header">
             
@@ -239,7 +295,7 @@ body.style.margin = 0;
             <h2>Listado de alumnos</h2>
         </div>
 
-        <div class="table-record-03">
+        <div class="table-record-03" v-show="recarga">
 
             <div class="configuration-header">
 
