@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getTeachers,getCourses,descargarPdfProfesores } from '@/api/peticiones';
+import { getTeachers,getCourses,descargarPdfProfesores,descargarPdfTodosProfesores,descargarPdfGrupo,descargarPdfGrupos } from '@/api/peticiones';
 import { Profesor } from '@/models/profesores';
 import { separadorNombre } from '@/js/utils';
 
@@ -22,6 +22,9 @@ let enlacePdf = ref("/Horario.pdf");
 let _profesores = ref([]);
 
 //Metodos
+/**
+ * Metodo que recoge los nombres de los profesores y manda una señal para recargar la pagina
+ */
 const cargarProfesores = async() =>{
     //Llamada a la peticion
     const data = await getTeachers();
@@ -43,6 +46,9 @@ const cargarProfesores = async() =>{
     recarga.value = false;
 }
 
+/**
+ * Metodo que recoge los cursos y manda una señal para recargar la pagina
+ */
 const cargarCursos = async () =>{
     //Llamada a la peticion
     const data = await getCourses();
@@ -58,35 +64,131 @@ const cargarCursos = async () =>{
     //Llamada a la recarga de la pagina
     recarga.value = false
 }
-
+/**
+ * Metodo que usando el nombre y apellido de un profesor se descarga un pdf
+ * que contiene el horario del profesor encontrado
+ * @param {string} nombre 
+ * @param {string} apellido 
+ */
 const obtenerPdfProfesor = async (nombre,apellido) =>{
+    //Se obtiene el pdf en formato blob
     const blob = await descargarPdfProfesores(nombre,apellido);
 
-    enlacePdf.value = URL.createObjectURL(blob)
+    //Al obteberse en formato blob se puede generar un enlace temporal que permite la
+    //visualizacion del pdf
+    enlacePdf.value = URL.createObjectURL(blob);
+
+    //Se manda una señal para recargar la pagina
+    recarga.value = false;
+}
+/**
+ * Metodo que descarga un pdf que contiene el horario de todos los profesores
+ */
+const obtenerPdfProfesores = async () =>{
+    //Se obtiene el pdf en formato blob
+    const blob = await descargarPdfTodosProfesores();
+
+    //Al obteberse en formato blob se puede generar un enlace temporal que permite la
+    //visualizacion del pdf
+    enlacePdf.value = URL.createObjectURL(blob);
+
+    //Se manda una señal para recargar la pagina
+    recarga.value = false;
+}
+
+/**
+ * Metodo que mediante un grupo descarga un pdf que contiene el
+ * horario del grupo encoontrado
+ * @param {string} grupo 
+ */
+const obtenerPdfGrupo = async (grupo) =>{
+    //Se obtiene el pdf en formato blob
+    const blob = await descargarPdfGrupo(grupo);
+
+    //Al obteberse en formato blob se puede generar un enlace temporal que permite la
+    //visualizacion del pdf
+    enlacePdf.value = URL.createObjectURL(blob);
+
+    //Se manda una señal para recargar la pagina
+    recarga.value = false;
+}
+
+/**
+ * Metodo que descarga un pdf que contiene el horario de todos los grupos
+ */
+const obtenerPdfGrupos = async () =>{
+    const blob = await descargarPdfGrupos();
+
+    enlacePdf.value = URL.createObjectURL(blob);
 
     recarga.value = false;
 }
 
+/**
+ * Evento que obtiene el valor actual del selector de profesores y manda
+ * separa el nombre y apellidos del profesor y llama al metodo encargado de 
+ * descargar el pdf del profesor seleccionado
+ */
 const onClickProfesor = () =>{
     //Obtenemos el elemento selection por su id
     const profeSelection = document.getElementById("Profesores");
     //Sacamos su valor en bruto
     let profesor = profeSelection.options[profeSelection.selectedIndex].text;
-
-    let nombreApellido = separadorNombre(profesor,_profesores.value);
-
-    obtenerPdfProfesor(nombreApellido[0],nombreApellido[1]);
+    
+    //Se comprueba que se haya seleccionado un valor
+    if(profesor=="Selecciona un profesor")
+    {
+        alert("No se ha seleccionado ningun profesor");
+    }
+    else
+    {
+        //Separamos el nombre del apellido
+        let nombreApellido = separadorNombre(profesor,_profesores.value);
+        //Realizamos la peticion
+        obtenerPdfProfesor(nombreApellido[0],nombreApellido[1]);
+    }
 }
+
+/**
+ * Evento que obtiene el valor actual del selector de grupos y llama
+ * al metodo encargado de descargar el pdf del grupo seleccionado
+ */
+const onClickGrupo = () =>{
+    //Obtenemos el elemento selection por su id
+    const grupoSelection = document.getElementById("Grupos");
+    //Sacamos su valor en bruto
+    let grupo = grupoSelection.options[grupoSelection.selectedIndex].text;
+
+    //Se comprueba que se haya seleccionado un valor
+    if(grupo=="Seleccione un grupo")
+    {
+        alert("No se ha seleccionado ningun grupo");
+    }
+    else
+    {
+        //Realizamos la peticion
+        obtenerPdfGrupo(grupo);
+    }
+    
+}
+
+/**
+ * Metodo que se encarga de recoger los datos al entrar en la pagina
+ */
 onMounted(async ()=>{
     cargarProfesores();
     cargarCursos();
-})
+});
+
+/**
+ * Metodo observador que la variable nuevo (booleana) cambie par recargar la pagina
+ */
 watch(recarga,(nuevo,viejo)=>{
     if(!nuevo)
     {
         recarga.value = true;
     }
-})
+});
 </script>
 
 <template>
@@ -111,43 +213,36 @@ watch(recarga,(nuevo,viejo)=>{
    </header> 
     <div id="Horario" v-show="recarga">
         <div id="horario-seleccionar-Profesor">
-            <form action="#">
-                <label for="Profesores">Profesores</label>
-                <p></p>
-                <select name="Profesores-Horarios" id="Profesores">
-                  <option selected>Selecciona un profesor</option>
-                  <option v-for="i in profesores">{{ i }}</option>
-                </select>
-                <p></p>
-                <button v-on:click="onClickProfesor()" type="submit">Enviar</button>
-          </form>
+            <label for="Profesores">Profesores</label>
+            <p></p>
+            <select name="Profesores-Horarios" id="Profesores">
+                <option selected>Selecciona un profesor</option>
+                <option v-for="i in profesores">{{ i }}</option>
+            </select>
+            <p></p>
+            <button v-on:click="onClickProfesor()">Enviar</button>
         </div>
         
         <div id="horario-todos-Profesores">
             <p>Horario de todos los Profesores</p>
-            <form action="">
-                <button id="button-Horario-Profesores"> Ver </button>
-            </form>
+            <button id="button-Horario-Profesores" v-on:click="obtenerPdfProfesores()"> Ver </button>
         </div>
         
         <div id="horario-seleccionar-grupo">
-            <form action="#">
-                <label for="Grupos">Grupos</label>
-                <p></p>
-                <select name="Grupos-Horarios" id="Grupos">
-                  <option selected>Seleccione un grupo </option>
-                  <option v-for="i in cursos">{{ i }} </option>
-                </select>
-                <p></p>
-                <input type="submit" value="Enviar" />
-          </form>
+            <label for="Grupos">Grupos</label>
+            <p></p>
+            <select name="Grupos-Horarios" id="Grupos">
+                <option selected>Seleccione un grupo </option>
+                <option v-for="i in cursos">{{ i }} </option>
+            </select>
+            <p></p>
+            <button v-on:click="onClickGrupo()">Enviar</button>
+         
         </div>
 
         <div id="horario-todos-grupos">
             <p>Horario de todos los Grupos</p>
-            <form action="">
-                <button id="button-Horario-Grupo"> Ver </button>
-            </form>
+            <button id="button-Horario-Grupo" v-on:click="obtenerPdfGrupos()"> Ver </button>
         </div>
 
     </div>   

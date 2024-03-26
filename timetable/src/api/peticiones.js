@@ -293,7 +293,7 @@ export const cargarCsvAlumnos = async (file) =>{
  * al servidor devolviendo el horario de un profesor en formato pdf
  * @param {string} nombre 
  * @param {string} apellido 
- * @returns respuesta en bytes con el contenido del pdf
+ * @returns respuesta en blob para obtener la url del pdf descargado en web
  */
 export const descargarPdfProfesores = async (nombre,apellido) =>{
     try
@@ -319,4 +319,82 @@ export const descargarPdfProfesores = async (nombre,apellido) =>{
         console.log(error);
     }
 
+}
+
+/**
+ * Metodo que realiza una peticion http al servidor para descargar el pdf del
+ * horario de todos los profesores
+ * @returns respuesta en blob para obtener la url del pdf descargado en web
+ */
+export const descargarPdfTodosProfesores = async () =>{
+    try
+    {
+        let url = "http://localhost:8088/horarios/get/teachers/pdf";
+
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("Profesores no cargados");
+        }
+
+        return await response.blob();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+}
+/**
+ * Metodo que mediante un grupo se realiza una peticion http que descarga un
+ * pdf con el horario del grupo introducido
+ * @param {string} grupo 
+ * @returns respuesta en blob para obtener la url del pdf descargado en web
+ */
+export const descargarPdfGrupo = async (grupo) => {
+    try
+    {
+        const params = {
+            group:grupo
+        };
+
+        let url = "http://localhost:8088/horarios/get/grupo/pdf?"+new URLSearchParams(params).toString();
+        
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("Grupos no cargados");
+        }
+
+        return await response.blob();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+}
+/**
+ * Metodo que realiza una peticion http al servidor para descargar el pdf del
+ * horario de todos los grupos
+ * @returns respuesta en blob para obtener la url del pdf descargado en web
+ */
+export const descargarPdfGrupos = async () => {
+    try
+    {
+        let url = "http://localhost:8088/horarios/get/grupos/pdf";
+
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("Grupos no cargados");
+        }
+
+        return await response.blob();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
 }
