@@ -288,3 +288,35 @@ export const cargarCsvAlumnos = async (file) =>{
         return await false;
     }
 }
+/**
+ * Metodo que pasandole un nombre y apellido realiza una peticion http
+ * al servidor devolviendo el horario de un profesor en formato pdf
+ * @param {string} nombre 
+ * @param {string} apellido 
+ * @returns respuesta en bytes con el contenido del pdf
+ */
+export const descargarPdfProfesores = async (nombre,apellido) =>{
+    try
+    {
+        const params = {
+            name:nombre,
+            lastname: apellido
+        };
+
+        let url = "http://localhost:8088/horarios/get/horario/teacher/pdf?"+ new URLSearchParams(params).toString();
+
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("Profesores no cargados");
+        }
+
+        return await response.blob();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+
+}

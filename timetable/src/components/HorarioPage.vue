@@ -1,8 +1,9 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getTeachers,getCourses } from '@/api/peticiones';
+import { getTeachers,getCourses,descargarPdfProfesores } from '@/api/peticiones';
 import { Profesor } from '@/models/profesores';
+import { separadorNombre } from '@/js/utils';
 
 //Instancia del router
 const router = useRouter();
@@ -16,6 +17,7 @@ body.style.margin = 0;
 let profesores = ref([]);
 let cursos = ref([]);
 let recarga = ref(true);
+let enlacePdf = ref("/Horario.pdf");
 //Variables privadas
 let _profesores = ref([]);
 
@@ -55,6 +57,25 @@ const cargarCursos = async () =>{
     cursos = ref(arrayCursos);
     //Llamada a la recarga de la pagina
     recarga.value = false
+}
+
+const obtenerPdfProfesor = async (nombre,apellido) =>{
+    const blob = await descargarPdfProfesores(nombre,apellido);
+
+    enlacePdf.value = URL.createObjectURL(blob)
+
+    recarga.value = false;
+}
+
+const onClickProfesor = () =>{
+    //Obtenemos el elemento selection por su id
+    const profeSelection = document.getElementById("Profesores");
+    //Sacamos su valor en bruto
+    let profesor = profeSelection.options[profeSelection.selectedIndex].text;
+
+    let nombreApellido = separadorNombre(profesor,_profesores.value);
+
+    obtenerPdfProfesor(nombreApellido[0],nombreApellido[1]);
 }
 onMounted(async ()=>{
     cargarProfesores();
@@ -98,7 +119,7 @@ watch(recarga,(nuevo,viejo)=>{
                   <option v-for="i in profesores">{{ i }}</option>
                 </select>
                 <p></p>
-                <button type="submit">Enviar</button>
+                <button v-on:click="onClickProfesor()" type="submit">Enviar</button>
           </form>
         </div>
         
@@ -131,7 +152,7 @@ watch(recarga,(nuevo,viejo)=>{
 
     </div>   
     <div id="horarios-container" v-show="recarga">
-        <embed type="text/html" src="/Horario.pdf"  width="85%" height="900px">
+        <embed type="text/html" v-bind:src="enlacePdf"  width="85%" height="900px">
     </div>
    
 </template>
