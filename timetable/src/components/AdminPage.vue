@@ -15,47 +15,70 @@ const colorFichero = ref("");
 const infoFicheroXml = ref("");
 const infoFicheroCsvStudents = ref("");
 const recarga = ref(true);
+
+//Metodos
 /**
  * Evento que se encarga de recoger el fichero cargado por el
- * administrador para enviarlo posteriormente al servidor
+ * administrador que contiene datos sobre el centro
+ * para enviarlo posteriormente al servidor
  */
 const cargarCentro = ()=>{
+    //Obtenemos el elemento input file por su id
     const fileName = document.getElementById("confXml");
 
+    //Si no se encuentra ningun fichero cargado mostramos un warning si no mandamos el fichero
     if (typeof fileName.files[0]=="undefined")
     {
         infoFicheroCsvStudents.value = "";
         infoFicheroXml.value = "No se ha seleccionado ningun fichero";
+        //Acceso al estilo
         colorFichero.value = "color:darkgoldenrod;";
+        //Llamada a la recarga de la pagina
         recarga.value = false;
     }
     else
     {
+        //Instanciamos un fichero de tipo .*
         let file = new FormData();
 
+        //Le asignamos el fichero cargado
         file.append('xmlFile',fileName.files[0]);
 
+        //Mandamos el fichero y su nombre
         cargarDatosCentro(file,fileName.files[0].name);
     }
 }
 
+/**
+ * Evento que se encarga de recoger el fichero cargado por el 
+ * administrador que contiene datos sobre los alumnos para
+ * enviarlo posteriormente al servidor
+ */
 const cargarAlumnos = ()=>{
+    //Obtenemos el elemento input file por su id
     const fileName = document.getElementById("students");
 
+    //Si no se encuentra ningun fichero cargado mostramos un warning si no mandamos el fichero
     if(typeof fileName.files[0]=="undefined")
     {
         infoFicheroXml.value = "";
         infoFicheroCsvStudents.value = "No se ha seleccionado ningun fichero";
+        //Acceso al estilo
         colorFichero.value = "color:darkgoldenrod;";
+        //Llamada a la recarga de la pagina
         recarga.value = false;
     }
     else
     {
+
+        //Instanciamos un fichero de tipo .*
         let file = new FormData();
 
-        file.append("csvFile",fileName.files[0]);
+        //Le asignamos el fichero cargado
+        file.append('csvFile',fileName.files[0]);
 
-        cargarDatosAlumnos(file,fileName.files[0].name)
+        //Mandamos el fichero y su nombre
+        cargarDatosAlumnos(file,fileName.files[0].name);
     }
 }
 
@@ -67,43 +90,65 @@ const cargarAlumnos = ()=>{
  * @param {string} fileName
  */
 const cargarDatosCentro = async (file,fileName) =>{
+    //Llamada a la peticion que devuelve un booleano
     const data = await cargarXml(file);
-
+    
+    //Si es true muestra confirmacion si no un error 
     if(data)
     {
         infoFicheroCsvStudents.value = "";
         infoFicheroXml.value = "Fichero "+fileName+" cargado correctamente";
+        //Acceso al estilo
         colorFichero.value = "color:forestgreen;";
+        //Llamada a la recarga de la pagina
         recarga.value = false;
     }
     else
     {
         infoFicheroCsvStudents.value = "";
         infoFicheroXml.value = "El fichero cargado es erroneo, comprueba que contiene la estructura correcta del centro";
+        //Llamada al estilo
         colorFichero.value = "color:darkred;";
+        //Llamada a la recarga de la pagina
         recarga.value = false;
     }
 }
 
+/**
+ * Metodo que llama a la peticion donde se envia el fichero csv
+ * que el administrador proporciona al servidor, ademas avisa al 
+ * administrador si el fichero esta bien formado o no
+ * @param {FormData} file 
+ * @param {string} fileName 
+ */
 const cargarDatosAlumnos = async (file,fileName) => {
+    //Llamada a la peticion que devuelve un booleano
     const data = await cargarCsvAlumnos(file);
 
+    //Si es true muestra confirmacion si no un error
     if(data)
     {
         infoFicheroXml.value = "";
         infoFicheroCsvStudents.value = "Fichero "+fileName+" cargado correctamente";
+        //Acceso al estilo
         colorFichero.value = "color:forestgreen;";
+        //Llamada a la recarga de la pagina
         recarga.value = false;
     }
     else
     {
         infoFicheroXml.value = "";
         infoFicheroCsvStudents.value = "El fichero cargado es erroneo, comprueba que la cabecera del fichero sea Alumno/a y Unidad o Curso y que los alumnos esten bien formados";
+        //Acceso al estilo
         colorFichero.value = "color:darkred;";
+        //Llamada a la recarga de la pagina
         recarga.value = false;
     }
 }
 
+/**
+ * Metodo observador que la variable nuevo (booleana) cambie par recargar la pagina
+ */
 watch(recarga,(nuevo,viejo)=>{
     if(!nuevo)
     {
