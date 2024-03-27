@@ -1,7 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getStudentCourses } from '@/api/peticiones';
+import { getStudentCourses,getSortStudentsCourse } from '@/api/peticiones';
 //Instancia del router
 const router = useRouter();
 const body = document.getElementById("body");
@@ -13,7 +13,15 @@ body.style.margin = 0;
 let recarga = ref(true);
 let cursos = ref([]);
 let alumnos = ref([]);
+let tipoAlumno = ref("");
 
+//Variables privadas
+let _infoAlumnos = ref([]);
+let _idaVueltaAlumnos = ref([]);
+let _statsAlumnos = ref([]);
+let _mostrarInfoAlumnos = ref(false);
+let _mostrarIdaVueltaAlumnos = ref(false);
+let _mostrarStatsAlumnos = ref(false);
 //Metodos
 
 /**
@@ -37,7 +45,7 @@ const getCourse = async()=>{
 
 /**
  * Metodo que recoge los nombres de los alumnos filtrados por el curso
- * introducido como parametro
+ * introducido como parametro 
  * @param {string} curso 
  */
  const cargarAlumnos = async(curso)=>{
@@ -52,17 +60,123 @@ const getCourse = async()=>{
         arrayAlumnos.push(nombre);
     }
 
-    alumnos = ref(arrayAlumnos);
+    alumnos.value = arrayAlumnos;
     //Llamada a la recarga de la pagina
     recarga.value = false;
+
 }
 
+/**
+ * Evento que controla que al cambiar el selector de cursos de la informacion de alumnos
+ * los alumnos se filtren segun el curso seleccionado
+ */
+const onChangeCursoInfoAlumno = () => {
+    //Obtenemos el id del selector de cursos
+    const cursoSelection = document.getElementById("selector-curso");
+    //Obtenemos su valor en bruto
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    //Comprobamos que se haya seleccionado algun dato
+    if(curso=="Seleccionar")
+    {
+        alert("Curso nulo no se filtran alumnos");
+        _mostrarInfoAlumnos.value = false;
+    }
+    else
+    {
+        _mostrarInfoAlumnos.value = true;
+        //Indicamos que solo queremos mostrar los alumnos del apartado de info
+        tipoAlumno.value = "info_alumnos"
+        cargarAlumnos(curso);
+    }
+
+}
+
+/**
+ * Evento que controla que al cambiar el selector de cursos del registro de ida y vuelta 
+ * los alumnos se filtren segun el curso seleccionado
+ */
+const onChangeCursoIdaVuelta = () => {
+    //Obtenemos el id del selector de cursos
+    const cursoSelection = document.getElementById("cursoBathroom");
+    //Obtenemos su valor en bruto
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    //Comprobamos que se haya seleccionado algun dato
+    if(curso=="Seleccionar")
+    {
+        alert("Curso nulo no se filtran alumnos");
+        _mostrarIdaVueltaAlumnos.value = false;
+    }
+    else
+    {
+        _mostrarIdaVueltaAlumnos.value = true;
+        //Indicamos que solo queremos mostrar los alumnos del apartado de info
+        tipoAlumno.value = "ida_vuelta_alumnos"
+        cargarAlumnos(curso);
+    }
+} 
+
+const onChangeStats = () =>{
+    //Obtenemos el id del selector de cursos
+    const cursoSelection = document.getElementById("cursoStats");
+    //Obtenemos su valor en bruto
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    //Comprobamos que se haya seleccionado algun dato
+    if(curso=="Seleccionar")
+    {
+        alert("Curso nulo no se filtran alumnos");
+        _mostrarStatsAlumnos.value = false;
+    }
+    else
+    {
+        _mostrarStatsAlumnos.value = true;
+        //Indicamos que solo queremos mostrar los alumnos del apartado de info
+        tipoAlumno.value = "stats_alumnos"
+        cargarAlumnos(curso);
+    }
+}
+/**
+ * Metodo que se encarga de recoger los datos al entrar en la pagina
+ */
+onMounted( async () =>{
+    getCourse();
+})
+
+/**
+ * Metodo observador que la variable nuevo (booleana) cambie par recargar la pagina
+ */
 watch(recarga,(nuevo,viejo) => {
     if(!nuevo)
     {
         recarga.value = true;
     }
 });
+
+/**
+ * Metodo observador que observa que el array de alumnos cambie, una vez
+ * que cambia compruevba el tipo de alumno y asigna al valor nuevo al array
+ * correspondiente
+ */
+watch(alumnos,(nuevo,viejo) => {
+    if(tipoAlumno.value == "info_alumnos")
+    {
+        _infoAlumnos = ref(nuevo);
+        recarga.value = false;
+    }
+    else if(tipoAlumno.value == "ida_vuelta_alumnos")
+    {
+        _idaVueltaAlumnos = ref(nuevo);
+        recarga.value = false;
+    }
+    else if(tipoAlumno.value == "stats_alumnos")
+    {
+        _statsAlumnos = ref(nuevo);
+        recarga.value = false;
+    }
+})
+
 </script>
 
 <template>
@@ -95,42 +209,17 @@ watch(recarga,(nuevo,viejo) => {
             <div class="selectores">
                 <form>
                     <label for="selector-curso">Cursos:</label>
-                    <select name="selector-curso" id="selector-curso">
-                        <option value="0">Seleccionar</option>
-                        <option value="aula01">1º FPB</option>
-                        <option value="aula03">2º FPB</option>
-                        <option value="aula05">1º DAM</option>
-                        <option value="aula07">2º DAM</option>
-                        <option value="aula02no">3º DIVER </option>
-                        <option value="aula02su">4º DIVER </option>
-                        <option value="aula011">1º BCS-A </option>
+                    <select name="selector-curso" id="selector-curso" v-on:change="onChangeCursoInfoAlumno()">
+                        <option selected>Seleccionar</option>
+                        <option v-for="i in cursos">{{ i }}</option>
                     </select>
                 </form>
 
                 <form>
                     <label for="selector-alumno">Alumnos:</label>
                     <select name="selector-alumno" id="selector-alumno">
-                        <option value="0">Seleccionar</option>
-                        <option value=“Alumno1”>Mayra Aguado López</option> 
-                        <option value=“Alumno2”>Rafael Alberola Robles</option> 
-                        <option value=“Alumno3”>Guillermo Alcusón Marco</option> 
-                        <option value=“Alumno4”>Francisca Alonso López</option> 
-                        <option value=“Alumno5”>Juan Álvaro Martínez-Carrasco</option> 
-                        <option value=“Alumno6”>Jaime Apariecido dos Santos</option> 
-                        <option value=“Alumno7”>Guido Arias Brenes</option> 
-                        <option value=“Alumno8”>Nekane Bariain Carrasco</option> 
-                        <option value=“Alumno9”>Jorge Barriobero Olarte</option> 
-                        <option value=“Alumno10”>Dolores Bastida López</option> 
-                        <option value=“Alumno11”>Maria E Berenguer Borja</option> 
-                        <option value=“Alumno12”>María Bernad Albiol</option> 
-                        <option value=“Alumno13”>José Manuel Blasco Boix</option> 
-                        <option value=“Alumno14”>Yanneth Bohorquez Pérez</option> 
-                        <option value=“Alumno15”>Antonio Camarasa Sanfelix</option> 
-                        <option value=“Alumno16”>Ramón Carañana Sanchís</option> 
-                        <option value=“Alumno17”>Clara Carbonell Sendra</option> 
-                        <option value=“Alumno18”>Antonio Casanova Mula</option> 
-                        <option value=“Alumno19”>Juan Félix Casas Bosca</option> 
-                        <option value=“Alumno20”>Mauricio Castillo Hidalgo</option> 
+                        <option selected>Seleccionar</option>
+                        <option v-for="i in _infoAlumnos" v-show="_mostrarInfoAlumnos">{{ i }}</option>
                     </select>
                 </form>
              </div>
@@ -175,13 +264,15 @@ watch(recarga,(nuevo,viejo) => {
             <div class="configuration-header">
             
                 <div class="add">
-                    <span>Datos</span>
-                    <select name="course-select">
-                        <option value="course-option">Curso</option>
+                    <span>Datos: </span>
+                    <select name="course-select" id="cursoBathroom" v-on:change="onChangeCursoIdaVuelta()">
+                        <option selected>Seleccionar</option>
+                        <option v-for="i in cursos">{{ i }}</option>
                     </select>
     
                     <select name="name-select">
                         <option value="group-option">Nombre y apellidos</option>
+                        <option v-for="i in _idaVueltaAlumnos" v-show="_mostrarIdaVueltaAlumnos">{{ i }}</option>
                     </select>
 
                 </div>
@@ -228,21 +319,23 @@ watch(recarga,(nuevo,viejo) => {
             <div class="configuration-header">
             
                 <div class="add">
-                    <span>Datos</span>
-                    <select name="course-select">
-                        <option value="course-option">Curso</option>
+                    <span>Datos: </span>
+                    <select name="course-select" id="cursoStats" v-on:change="onChangeStats()">
+                        <option selected>Seleccionar</option>
+                        <option v-for="i in cursos">{{ i }}</option>
                     </select>
     
                     <select name="name-select">
                         <option value="group-option">Nombre y apellidos</option>
+                        <option v-for="i in _statsAlumnos" v-show="_statsAlumnos">{{ i }}</option>
                     </select>
 
                 </div>
 
                 <div class="date">
                     <span>Periodo</span>
-                    <input type="search" class="date-search" placeholder="Fecha inicio">
-                    <input type="search" class="date-search" placeholder="Fecha fin">
+                    <input type="date" title="Fecha de inicio" class="date-search" placeholder="Fecha inicio">
+                    <input type="date" title="Fecha de fin" class="date-search" placeholder="Fecha fin">
                 </div>
     
             </div>
@@ -301,8 +394,8 @@ watch(recarga,(nuevo,viejo) => {
 
                 <div class="date">
                     <span>Periodo</span>
-                    <input type="search" class="date-search" placeholder="Fecha inicio">
-                    <input type="search" class="date-search" placeholder="Fecha fin">
+                    <input type="date" title="Fecha de inicio" class="date-search" placeholder="Fecha inicio">
+                    <input type="date" title="Fecha de fin" class="date-search" placeholder="Fecha fin">
                 </div>
     
             </div>
