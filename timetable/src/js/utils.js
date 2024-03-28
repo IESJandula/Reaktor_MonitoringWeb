@@ -1,5 +1,6 @@
 import { Profesor } from "@/models/profesores";
 import { Tramo } from "@/models/tramos";
+import { Alumno } from "@/models/alumnos";
 
 /**
  * Metodo que compara el nombre seleccionado con los datos cargadados
@@ -156,4 +157,29 @@ export const checkHoraDia = () =>
     }
 
     return mostrar;
+}
+
+/**
+ * Metodo que mediante un alumno y un curso devuelve un alumno en concreto
+ * para su puesta de datos en una tabla
+ * @param {string} alumno 
+ * @param {string} curso 
+ * @param {Alumno[]} alumnos 
+ * @returns alumno encontrado
+ */
+export const separadorNombreCurso = (alumno,curso,alumnos) =>{
+    let alumnoFound =  new Alumno("?","?","?",0);
+
+    for(let i = 0;i<alumnos.length;i++)
+    {
+        let item = alumnos[i];
+        let itemValue = item.nombre+" "+item.apellidos;
+
+        if(itemValue==alumno)
+        {
+           alumnoFound = new Alumno(item.nombre,item.apellidos,curso,item.numBathroom); 
+        }
+    }
+
+    return alumnoFound;
 }

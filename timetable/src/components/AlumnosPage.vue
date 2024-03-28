@@ -2,6 +2,8 @@
 import { ref, watch,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getStudentCourses,getSortStudentsCourse } from '@/api/peticiones';
+import { Alumno } from '@/models/alumnos';
+import { separadorNombreCurso } from "@/js/utils";
 //Instancia del router
 const router = useRouter();
 const body = document.getElementById("body");
@@ -14,8 +16,10 @@ let recarga = ref(true);
 let cursos = ref([]);
 let alumnos = ref([]);
 let tipoAlumno = ref("");
+let idaVuelta = ref(["?","?","?"])
 
 //Variables privadas
+let _alumnos = ref([]);
 let _infoAlumnos = ref([]);
 let _idaVueltaAlumnos = ref([]);
 let _statsAlumnos = ref([]);
@@ -51,16 +55,22 @@ const getCourse = async()=>{
  const cargarAlumnos = async(curso)=>{
     //Llamada a la peticion
     const data = await getSortStudentsCourse(curso);
-    //Array de alumnos en formato string 
+    //Array de objetos
     let arrayAlumnos = [];
+    //Array de alumnos en formato string 
+    let alumnosString = [];
     //Iterador de los datos que guarda los alumnos
     for(let i = 0;i<data.length;i++)
     {
+        let alumno = new Alumno(data[i].name,data[i].lastName,curso,data[i].numBathroom);
+        arrayAlumnos.push(alumno);
+
         let nombre = data[i].name+" "+data[i].lastName;
-        arrayAlumnos.push(nombre);
+        alumnosString.push(nombre);
     }
 
-    alumnos.value = arrayAlumnos;
+    _alumnos = ref(arrayAlumnos);
+    alumnos.value = alumnosString;
     //Llamada a la recarga de la pagina
     recarga.value = false;
 
@@ -117,6 +127,10 @@ const onChangeCursoIdaVuelta = () => {
     }
 } 
 
+/**
+ * Evento que controla que al cambiar el selector de cursos del registro de estadisticas
+ * los alumnos se filtran segun el curso seleccionado
+ */
 const onChangeStats = () =>{
     //Obtenemos el id del selector de cursos
     const cursoSelection = document.getElementById("cursoStats");
@@ -136,6 +150,43 @@ const onChangeStats = () =>{
         tipoAlumno.value = "stats_alumnos"
         cargarAlumnos(curso);
     }
+}
+/**
+ * Evento que recoge los datos del alumno y el curso al cambiar el selector de alumnos 
+ * los encapsula en una tabla para luego mandarlos en una peticion http
+ */
+const onChangeAlumnosIdaVuelta = () =>{
+    //Obtenemos el id del selector de alumnos
+    const alumnoSelection = document.getElementById("alumnosIdaVuelta");
+    //Obtenemos su valor en bruto
+    let alumno = alumnoSelection.options[alumnoSelection.selectedIndex].text;
+
+    //Obtenemos el id del selector de cursos
+    const cursoSelection = document.getElementById("cursoBathroom");
+    //Obtenemos su valor en bruto
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    if(alumno=="Nombre y apellidos")
+    {
+        alert("No se ha seleccionado ningun alumno");
+    }
+    else
+    {
+        let alumnoObject = separadorNombreCurso(alumno,curso,_alumnos.value);
+        idaVuelta = ref([alumnoObject.nombre,alumnoObject.apellidos,alumnoObject.curso]);
+        recarga.value = false;
+    }
+}
+
+const onChangeAlumnosStats = () =>{
+
+}
+
+/**
+ * 
+ */
+const onClickStats = () =>{
+
 }
 /**
  * Metodo que se encarga de recoger los datos al entrar en la pagina
@@ -270,8 +321,8 @@ watch(alumnos,(nuevo,viejo) => {
                         <option v-for="i in cursos">{{ i }}</option>
                     </select>
     
-                    <select name="name-select">
-                        <option value="group-option">Nombre y apellidos</option>
+                    <select name="name-select" id="alumnosIdaVuelta" v-on:change="onChangeAlumnosIdaVuelta()">
+                        <option selected>Nombre y apellidos</option>
                         <option v-for="i in _idaVueltaAlumnos" v-show="_mostrarIdaVueltaAlumnos">{{ i }}</option>
                     </select>
 
@@ -292,9 +343,9 @@ watch(alumnos,(nuevo,viejo) => {
 
                 <tbody>
                     <tr>
-                        <td>Lucía</td>
-                        <td>García González</td>
-                        <td>1 ESO A</td>
+                        <td>{{ idaVuelta[0] }}</td>
+                        <td>{{ idaVuelta[1] }}</td>
+                        <td>{{ idaVuelta[2] }}</td>
                         <td>
                             <span class="action-btn">
                                 <a href="#">Ida</a>
@@ -336,6 +387,8 @@ watch(alumnos,(nuevo,viejo) => {
                     <span>Periodo</span>
                     <input type="date" title="Fecha de inicio" class="date-search" placeholder="Fecha inicio">
                     <input type="date" title="Fecha de fin" class="date-search" placeholder="Fecha fin">
+                    <br>
+                    <button id="botonStats">Buscar</button>
                 </div>
     
             </div>
@@ -655,6 +708,24 @@ table>tbody>tr:hover{
    filter:drop-shadow(0px 2px 6px rgb(4, 144, 163));
 }
 
+#botonStats{
+    width: 20%;
+    margin-left: 3.5%;
+    margin-top: 1%;
+    background-color: rgb(116, 173, 190);
+    border-radius: 10%;
+    border: 1px solid rgb(0, 0, 0);
+    color: white;
+    font-weight: bold;
+}
+
+#botonStats:hover{
+    background-color: rgb(80, 142, 161);
+}
+
+#botonStats:active{
+    background-color: rgb(33, 98, 117);
+}
 
 
 *{
