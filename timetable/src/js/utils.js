@@ -176,10 +176,53 @@ export const separadorNombreCurso = (alumno,curso,alumnos) =>{
         let itemValue = item.nombre+" "+item.apellidos;
 
         if(itemValue==alumno)
-        {
-           alumnoFound = new Alumno(item.nombre,item.apellidos,curso,item.numBathroom); 
+        {       
+            alumnoFound = new Alumno(item.nombre,item.apellidos,curso,item.numBathroom); 
         }
     }
 
     return alumnoFound;
+}
+/**
+ * Metodo que transforma la fecha de formato ingles yyyy-mm-dd a formato español dd/mm/yyyy
+ * @param {string} fecha 
+ * @returns fecha transformada a dd/mm/yyyy
+ */
+export const convertirFecha = (fecha) =>{
+    let split = fecha.split("-");
+
+    let fechaNueva = "";
+
+    fechaNueva = split[2].trim()+"/"+split[1].trim()+"/"+split[0].trim();
+    
+    return fechaNueva;
+}
+/**
+ * Metodo que compara 2 fechas y devuelve true o false dependiendo si son
+ * mayores o menores
+ * @param {string} fechaInicio 
+ * @param {string} fechaFin 
+ * @returns teue si la fecha de inicio es menor false si no
+ */
+export const compareDate = (fechaInicio,fechaFin) =>{
+    let compare = true;
+    let splitInicio = fechaInicio.split("/");
+    let splitFin = fechaFin.split("/");
+
+    //Comprobamos el year
+    compare = Number(splitInicio[2].trim())>=Number(splitFin[2].trim());
+
+    //Comprobamos el mes
+    if(compare)
+    {
+        compare =  Number(splitInicio[1].trim())>=Number(splitFin[1].trim());
+    }
+
+    //Comprobamos el dia
+    if(compare)
+    {
+        compare =  Number(splitInicio[0].trim())>=Number(splitFin[0].trim());
+    }
+
+    return compare;
 }

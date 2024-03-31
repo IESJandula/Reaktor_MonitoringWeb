@@ -208,6 +208,26 @@ export const getPoints = async ()=>{
     }
 }
 
+export const getSortStudents = async () =>{
+    try
+    {
+        let url = "http://localhost:8088/horarios/get/sortstudents"
+
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("No se ha cargado ningn estudiante");
+        }
+
+        return await response.json();
+    }
+    catch(error)
+    {
+
+    }
+}
+
 export const getSortStudentsCourse = async (curso)=>{
     try
     {
@@ -392,6 +412,95 @@ export const descargarPdfGrupos = async () => {
         }
 
         return await response.blob();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+}
+
+export const registrarIda = async (nombre,apellidos,curso) =>{
+    try
+    {
+        const params = {
+            name:nombre,
+            lastName:apellidos,
+            course:curso
+        };
+
+        let url = "http://localhost:8088/horarios/student/visita/bathroom?"+new URLSearchParams(params).toString();
+
+        const response = await fetch(url,{
+            method:"POST"
+        });
+
+        if(!response.ok)
+        {
+            throw new Error("El alumno se encuentra en el baño");
+        }
+
+        return true;
+    }
+    catch(error)
+    {
+        console.log(error);
+
+        return false;
+    }
+}
+
+export const registrarVuelta = async(nombre,apellidos,curso) =>{
+    try
+    {
+        const params = {
+            name:nombre,
+            lastName:apellidos,
+            course:curso
+        };
+
+        let url = "http://localhost:8088/horarios/student/regreso/bathroom?"+new URLSearchParams(params).toString();
+
+        const response = await fetch(url,{
+            method:"POST"
+        });
+
+        if(!response.ok)
+        {
+            throw new Error("El alumno se encuentra en el baño");
+        }
+
+        return true;
+    }
+    catch(error)
+    {
+        console.log(error);
+
+        return false;
+    }
+
+}
+
+export const obtenerVisitasAlumno = async(nombre,apellidos,curso,fechaInicio,fechaFin) =>{
+    try
+    {
+        const params = {
+            name:nombre,
+            lastName:apellidos,
+            course:curso,
+            fechaInicio:fechaInicio,
+            fechaFin:fechaFin
+        }
+
+        let url = "http://localhost:8088/horarios/get/veces/visitado/studentFechas?"+new URLSearchParams(params).toString();
+
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("No se encuentran registros de visita al baño por parte del alumno");
+        }
+
+        return await response.json();
     }
     catch(error)
     {

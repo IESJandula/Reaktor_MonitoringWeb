@@ -1,9 +1,10 @@
 <script setup>
 import { ref, watch,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getStudentCourses,getSortStudentsCourse } from '@/api/peticiones';
+import { getStudentCourses,getSortStudentsCourse,getSortStudents,registrarIda,registrarVuelta,obtenerVisitasAlumno } from '@/api/peticiones';
 import { Alumno } from '@/models/alumnos';
-import { separadorNombreCurso } from "@/js/utils";
+import { RegistroVisita } from '@/models/visitas';
+import { separadorNombreCurso,compareDate,convertirFecha } from "@/js/utils";
 //Instancia del router
 const router = useRouter();
 const body = document.getElementById("body");
@@ -16,7 +17,11 @@ let recarga = ref(true);
 let cursos = ref([]);
 let alumnos = ref([]);
 let tipoAlumno = ref("");
-let idaVuelta = ref(["?","?","?"])
+let idaVuelta = ref(["?","?","?"]);
+let stats = ref(["?","?","?","?"]);
+let infoIdaVuelta = ref("");
+let estiloIdaVuelta = ref("");
+let mostrarVisitas = ref(false);
 
 //Variables privadas
 let _alumnos = ref([]);
@@ -26,8 +31,8 @@ let _statsAlumnos = ref([]);
 let _mostrarInfoAlumnos = ref(false);
 let _mostrarIdaVueltaAlumnos = ref(false);
 let _mostrarStatsAlumnos = ref(false);
+let _visitasAlumno = ref([]); 
 //Metodos
-
 /**
  * Metodo que recoge los cursos de los alumnos y manda una señal para recargar la pagina
  */
@@ -48,32 +53,44 @@ const getCourse = async()=>{
 }
 
 /**
+ * Metodo que carga todos los alumnos al principio para guardar las
+ * veces que un alumno ha ido al baño
+ */
+const cargarAlumnos = async()=>{
+    const data = await getSortStudents();
+
+    let arrayAlumno = [];
+
+    for(let i=0;i<data.length;i++)
+    {
+        let alumno = new Alumno(data[i].name,data[i].lastName,data[i].course,data[i].numBathroom);
+        arrayAlumno.push(alumno);
+    }
+
+    _alumnos = ref(arrayAlumno);
+    recarga.value = false;
+}
+
+/**
  * Metodo que recoge los nombres de los alumnos filtrados por el curso
  * introducido como parametro 
  * @param {string} curso 
  */
- const cargarAlumnos = async(curso)=>{
+ const cargarAlumnosCurso = async(curso)=>{
     //Llamada a la peticion
     const data = await getSortStudentsCourse(curso);
-    //Array de objetos
-    let arrayAlumnos = [];
     //Array de alumnos en formato string 
     let alumnosString = [];
     //Iterador de los datos que guarda los alumnos
     for(let i = 0;i<data.length;i++)
     {
-        let alumno = new Alumno(data[i].name,data[i].lastName,curso,data[i].numBathroom);
-        arrayAlumnos.push(alumno);
-
         let nombre = data[i].name+" "+data[i].lastName;
         alumnosString.push(nombre);
     }
 
-    _alumnos = ref(arrayAlumnos);
     alumnos.value = alumnosString;
     //Llamada a la recarga de la pagina
     recarga.value = false;
-
 }
 
 /**
@@ -97,7 +114,7 @@ const onChangeCursoInfoAlumno = () => {
         _mostrarInfoAlumnos.value = true;
         //Indicamos que solo queremos mostrar los alumnos del apartado de info
         tipoAlumno.value = "info_alumnos"
-        cargarAlumnos(curso);
+        cargarAlumnosCurso(curso);
     }
 
 }
@@ -123,7 +140,7 @@ const onChangeCursoIdaVuelta = () => {
         _mostrarIdaVueltaAlumnos.value = true;
         //Indicamos que solo queremos mostrar los alumnos del apartado de info
         tipoAlumno.value = "ida_vuelta_alumnos"
-        cargarAlumnos(curso);
+        cargarAlumnosCurso(curso);
     }
 } 
 
@@ -148,7 +165,7 @@ const onChangeStats = () =>{
         _mostrarStatsAlumnos.value = true;
         //Indicamos que solo queremos mostrar los alumnos del apartado de info
         tipoAlumno.value = "stats_alumnos"
-        cargarAlumnos(curso);
+        cargarAlumnosCurso(curso);
     }
 }
 /**
@@ -178,21 +195,168 @@ const onChangeAlumnosIdaVuelta = () =>{
     }
 }
 
+/**
+ * Evento que recoge los datos del alumno y el curso al cambiar el selector de alumnos
+ * los encapsula en una tabla para luego mandarlos en una peticion http
+ */
 const onChangeAlumnosStats = () =>{
+    //Obtenemos el id del selector de alumnos
+    const alumnoSelection = document.getElementById("alumnosStats");
+    //Obtenemos su valor en bruto
+    let alumno = alumnoSelection.options[alumnoSelection.selectedIndex].text;
 
+    //Obtenemos el id del selector de cursos
+    const cursoSelection = document.getElementById("cursoStats");
+    //Obtenemos su valor en bruto
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    if(alumno=="Nombre y apellidos")
+    {
+        alert("No se ha seleccionado ningun alumno")
+    }
+    else
+    {
+        let alumnoObject = separadorNombreCurso(alumno,curso,_alumnos.value);
+        stats = ref([alumnoObject.nombre,alumnoObject.apellidos,alumnoObject.curso,""+alumnoObject.numBathroom]);
+        recarga.value = false;
+    }
+}
+
+const onClickIda = async () =>{
+
+    if(idaVuelta.value[0]=="?" || idaVuelta.value[1]=="?" || idaVuelta.value[2]=="?")
+    {
+        infoIdaVuelta.value = "Alumno/a no seleccionado";
+        estiloIdaVuelta.value = "color:darkgoldenrod;"
+        recarga.value = false;
+    }
+    else
+    {
+        const data = await registrarIda(idaVuelta.value[0],idaVuelta.value[1],idaVuelta.value[2]);
+
+        if(data)
+        {
+            infoIdaVuelta.value = "Ida registrada para el alumno/a "+idaVuelta.value[0]+" "+idaVuelta.value[1];
+            estiloIdaVuelta.value = "color:forestgreen;"
+            recarga.value = false;
+        }
+        else
+        {
+            infoIdaVuelta.value = "El alumno/a "+idaVuelta.value[0]+" "+idaVuelta.value[1]+" se encuentra en el baño";
+            estiloIdaVuelta.value = "color:darkred;"
+            recarga.value = false;
+        }
+    }
+    
+}
+
+const onClickVuelta = async () => {
+    if(idaVuelta.value[0]=="?" || idaVuelta.value[1]=="?" || idaVuelta.value[2]=="?")
+    {
+        infoIdaVuelta.value = "Alumno/a no seleccionado";
+        estiloIdaVuelta.value = "color:darkgoldenrod;"
+        recarga.value = false;
+    }
+    else
+    {
+        const data = await registrarVuelta(idaVuelta.value[0],idaVuelta.value[1],idaVuelta.value[2]);
+
+        if(data)
+        {
+            infoIdaVuelta.value = "Vuelta registrada para el alumno/a "+idaVuelta.value[0]+" "+idaVuelta.value[1];
+            estiloIdaVuelta.value = "color:forestgreen;"
+            recarga.value = false;
+            cargarAlumnos();
+        }
+        else
+        {
+            infoIdaVuelta.value = "El alumno/a "+idaVuelta.value[0]+" "+idaVuelta.value[1]+" no ha ido al baño";
+            estiloIdaVuelta.value = "color:darkred;"
+            recarga.value = false;
+        }
+    }
+}
+
+const obtenerVisitaAlumno = async(nombre,apellidos,curso,fechaInicio,fechaFin) =>{
+    const data = await obtenerVisitasAlumno(nombre,apellidos,curso,fechaInicio,fechaFin);
+
+    if(typeof data == "undefined")
+    {
+        alert("No se han podido encontrar registros en este momento");
+        mostrarVisitas.value = false
+    }
+    else if(data.length==0)
+    {
+        alert("Registros no encontrados para el alumno solicitado");
+        mostrarVisitas.value = false;
+    }
+    else
+    {
+        let arrayVisitas = [];
+
+        for(let i=0;i<data.length;i++)
+        {
+            let visita = new RegistroVisita(data[i].hora,data[i].dia);
+            arrayVisitas.push(visita);
+        }
+        _visitasAlumno = ref(arrayVisitas);
+        mostrarVisitas.value = true;
+    }
+    recarga.value = false;
 }
 
 /**
  * 
  */
 const onClickStats = () =>{
+     //Obtenemos el id del selector de alumnos
+     const alumnoSelection = document.getElementById("alumnosStats");
+    //Obtenemos su valor en bruto
+    let alumno = alumnoSelection.options[alumnoSelection.selectedIndex].text;
 
+    //Obtenemos el id del selector de cursos
+    const cursoSelection = document.getElementById("cursoStats");
+    //Obtenemos su valor en bruto
+    let curso = cursoSelection.options[cursoSelection.selectedIndex].text;
+
+    //Obtenemos la fecha de inicio
+    const fechaInicio = document.getElementById("fechaInicio");
+    //Obtenemos su valor en bruto
+    let valorFechaInicio = convertirFecha(fechaInicio.value);
+
+    //Obtenemos la fecha de fin
+    const fechaFin = document.getElementById("fechaFin");
+    //Obtenemos su valor en bruto
+    let valorFechaFin = convertirFecha(fechaFin.value);
+
+    if(alumno=="Nombre y apellidos")
+    {
+        alert("No se ha seleccionado ningun alumno");
+    }
+    else if(valorFechaInicio=="")
+    {
+        alert("No se ha seleccionado fecha de inicio");
+    }
+    else if(valorFechaFin=="")
+    {
+        alert("No se ha seleccionado fecha de fin");
+    }
+    else if(!compareDate(valorFechaInicio,valorFechaFin))
+    {
+        alert("La fecha de inicio es posterior a la fecha de fin");
+    }
+    else
+    {
+        let nombreApellido = separadorNombreCurso(alumno,curso,_alumnos.value);
+        obtenerVisitaAlumno(nombreApellido.nombre,nombreApellido.apellidos,curso,valorFechaInicio,valorFechaFin); 
+    }
 }
 /**
  * Metodo que se encarga de recoger los datos al entrar en la pagina
  */
 onMounted( async () =>{
     getCourse();
+    cargarAlumnos();
 })
 
 /**
@@ -291,8 +455,8 @@ watch(alumnos,(nuevo,viejo) => {
                             <td>*****@g.educaand.es</td>
                             <td>
                                 <span class="action-btn">
-                                    <a href="#">Info Tutor</a>
-                                    <a href="#">Info Tutor Legal</a>
+                                    <a>Info Tutor</a>
+                                    <a>Info Tutor Legal</a>
                                 </span>
                             </td>
                         </tr>
@@ -348,14 +512,15 @@ watch(alumnos,(nuevo,viejo) => {
                         <td>{{ idaVuelta[2] }}</td>
                         <td>
                             <span class="action-btn">
-                                <a href="#">Ida</a>
-                                <a href="#">Vuelta</a>
+                                <a href="#" v-on:click="onClickIda()">Ida</a>
+                                <a href="#" v-on:click="onClickVuelta()">Vuelta</a>
                             </span>
                         </td>
                     </tr>
                 </tbody>
 
             </table>
+            <h2 v-bind:style="estiloIdaVuelta" v-show="infoIdaVuelta!=''">{{ infoIdaVuelta }}</h2>
 
         </div>
 
@@ -376,7 +541,7 @@ watch(alumnos,(nuevo,viejo) => {
                         <option v-for="i in cursos">{{ i }}</option>
                     </select>
     
-                    <select name="name-select">
+                    <select name="name-select" id="alumnosStats" v-on:change="onChangeAlumnosStats()">
                         <option value="group-option">Nombre y apellidos</option>
                         <option v-for="i in _statsAlumnos" v-show="_statsAlumnos">{{ i }}</option>
                     </select>
@@ -385,10 +550,10 @@ watch(alumnos,(nuevo,viejo) => {
 
                 <div class="date">
                     <span>Periodo</span>
-                    <input type="date" title="Fecha de inicio" class="date-search" placeholder="Fecha inicio">
-                    <input type="date" title="Fecha de fin" class="date-search" placeholder="Fecha fin">
+                    <input type="date" title="Fecha de inicio" class="date-search" placeholder="Fecha inicio" id="fechaInicio">
+                    <input type="date" title="Fecha de fin" class="date-search" placeholder="Fecha fin" id="fechaFin">
                     <br>
-                    <button id="botonStats">Buscar</button>
+                    <button id="botonStats" v-on:click="onClickStats()">Buscar</button>
                 </div>
     
             </div>
@@ -406,10 +571,10 @@ watch(alumnos,(nuevo,viejo) => {
 
                 <tbody>
                     <tr>
-                        <td>Lucía</td>
-                        <td>García González</td>
-                        <td>1 ESO A</td>
-                        <td>?</td>
+                        <td>{{ stats[0] }}</td>
+                        <td>{{ stats[1] }}</td>
+                        <td>{{ stats[2] }}</td>
+                        <td>{{ stats[3] }}</td>
                     </tr>
                 </tbody>
 
@@ -424,10 +589,16 @@ watch(alumnos,(nuevo,viejo) => {
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody v-if="!mostrarVisitas">
                     <tr>
                         <td>?</td>
                         <td>?</td>
+                    </tr>
+                </tbody>
+                <tbody v-else>
+                    <tr v-for="i in _visitasAlumno">
+                        <td>{{ i.dia }}</td>
+                        <td>{{ i.hora }}</td>
                     </tr>
                 </tbody>
 
