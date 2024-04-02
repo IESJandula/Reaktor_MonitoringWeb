@@ -507,3 +507,28 @@ export const obtenerVisitasAlumno = async(nombre,apellidos,curso,fechaInicio,fec
         console.log(error);
     }
 }
+
+export const obtenerVisitasAlumnos = async(fechaInicio,fechaFin) =>{
+    try
+    {
+        const params = {
+            fechaInicio:fechaInicio,
+            fechaFin:fechaFin
+        }
+
+        let url = "http://localhost:8088/horarios/get/students/visitas/bathroom?"+new URLSearchParams(params).toString();
+
+        const response = await fetch(url);
+
+        if(!response.ok)
+        {
+            throw new Error("No hay visitas en este periodo");
+        }
+
+        return await response.json();
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+}

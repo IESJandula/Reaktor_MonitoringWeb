@@ -167,12 +167,12 @@ watch(recarga,(nuevo,viejo)=>{
                 <label for="check" class="checkbtn">
                 </label>
                 <ul>
-                    <li v-on:click="router.push('/horarios/admin')">Administración</li>
-                    <li v-on:click="router.push('/horarios/profesores')">Profesores</li>
-                    <li v-on:click="router.push('/horarios/alumnos')">Alumnos</li>
-                    <li v-on:click="router.push('/horarios/horas')">Horarios</li>
-                    <li v-on:click="router.push('/horarios/convivencia')">Convivencia</li>
-                    <li v-on:click="router.push('/horarios/mapa')">Mapas</li>
+                    <li class="botonMenu"  v-on:click="router.push('/horarios/admin')">Administración</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/profesores')">Profesores</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/alumnos')">Alumnos</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/horas')">Horarios</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/convivencia')">Convivencia</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/mapa')">Mapas</li>
                 </ul>
             </div>
        </header> 
@@ -340,5 +340,9 @@ a, li{
         transition: all 0.25s;  /*Activamos una transición para que el menú aparezca*/
     }
 }
+.botonMenu{
+    cursor: pointer;
+}
+
 
 </style>

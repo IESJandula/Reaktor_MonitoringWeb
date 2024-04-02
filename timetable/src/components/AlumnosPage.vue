@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getStudentCourses,getSortStudentsCourse,getSortStudents,registrarIda,registrarVuelta,obtenerVisitasAlumno } from '@/api/peticiones';
+import { getStudentCourses,getSortStudentsCourse,getSortStudents,registrarIda,registrarVuelta,obtenerVisitasAlumno,obtenerVisitasAlumnos } from '@/api/peticiones';
 import { Alumno } from '@/models/alumnos';
 import { RegistroVisita } from '@/models/visitas';
 import { separadorNombreCurso,compareDate,convertirFecha } from "@/js/utils";
@@ -22,6 +22,9 @@ let stats = ref(["?","?","?","?"]);
 let infoIdaVuelta = ref("");
 let estiloIdaVuelta = ref("");
 let mostrarVisitas = ref(false);
+let infoListado = ref("");
+let estiloListado = ref("");
+let mostrarListado = ref(false);
 
 //Variables privadas
 let _alumnos = ref([]);
@@ -32,6 +35,7 @@ let _mostrarInfoAlumnos = ref(false);
 let _mostrarIdaVueltaAlumnos = ref(false);
 let _mostrarStatsAlumnos = ref(false);
 let _visitasAlumno = ref([]); 
+let _listadoAlumno = ref([]);
 //Metodos
 /**
  * Metodo que recoge los cursos de los alumnos y manda una señal para recargar la pagina
@@ -305,6 +309,33 @@ const obtenerVisitaAlumno = async(nombre,apellidos,curso,fechaInicio,fechaFin) =
     recarga.value = false;
 }
 
+const obtenerVisitaAlumnos = async(fechaInicio,fechaFin) =>{
+    const data = await obtenerVisitasAlumnos(fechaInicio,fechaFin);
+
+    if(typeof data == "undefined")
+    {
+        mostrarListado.value = false;
+        estiloIdaVuelta.value = "color: darkred;"
+        infoListado.value = "No se han podido encontrar alumnos en este momento";
+    }
+    else
+    {
+        let arrayListado = [];
+
+        for(let i=0;i<data.length;i++)
+        {
+            let alumno = new Alumno(data[i].alumno.name,data[i].alumno.lastName,data[i].alumno.course,data[i].alumno.numBathroom);
+            arrayListado.push(alumno);
+        }
+
+        _listadoAlumno = ref(arrayListado);
+
+        estiloIdaVuelta.value = "color: forestgreen;"
+        infoListado.value = "Alumnos encontrados";
+        mostrarListado.value = true;
+    }
+    recarga.value = false;
+}
 /**
  * 
  */
@@ -350,6 +381,36 @@ const onClickStats = () =>{
         let nombreApellido = separadorNombreCurso(alumno,curso,_alumnos.value);
         obtenerVisitaAlumno(nombreApellido.nombre,nombreApellido.apellidos,curso,valorFechaInicio,valorFechaFin); 
     }
+}
+
+const onClickListado = () =>{
+    //Obtenemos la fecha de inicio
+    const fechaInicio = document.getElementById("fechaListadoInicio");
+    //Obtenemos su valor en bruto
+    let valorFechaInicio = convertirFecha(fechaInicio.value);
+
+    //Obtenemos la fecha de fin
+    const fechaFin = document.getElementById("fechaListadoFinal");
+    //Obtenemos su valor en bruto
+    let valorFechaFin = convertirFecha(fechaFin.value);
+
+    if(valorFechaInicio=="")
+    {
+        alert("No se ha seleccionado fecha de inicio");
+    }
+    else if(valorFechaFin=="")
+    {
+        alert("No se ha seleccionado fecha de fin");
+    }
+    else if(!compareDate(valorFechaInicio,valorFechaFin))
+    {
+        alert("La fecha de inicio es posterior a la fecha de fin");
+    }
+    else
+    {
+        obtenerVisitaAlumnos(valorFechaInicio,valorFechaFin); 
+    }
+
 }
 /**
  * Metodo que se encarga de recoger los datos al entrar en la pagina
@@ -405,12 +466,12 @@ watch(alumnos,(nuevo,viejo) => {
                    
                 </label>
                 <ul>
-                    <li v-on:click="router.push('/horarios/admin')">Administración</li>
-                    <li v-on:click="router.push('/horarios/profesores')">Profesores</li>
-                    <li v-on:click="router.push('/horarios/alumnos')">Alumnos</li>
-                    <li v-on:click="router.push('/horarios/horas')">Horarios</li>
-                    <li v-on:click="router.push('/horarios/convivencia')">Convivencia</li>
-                    <li v-on:click="router.push('/horarios/mapa')">Mapas</li>
+                    <li class="botonMenu"  v-on:click="router.push('/horarios/admin')">Administración</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/profesores')">Profesores</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/alumnos')">Alumnos</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/horas')">Horarios</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/convivencia')">Convivencia</li>
+                    <li class="botonMenu" v-on:click="router.push('/horarios/mapa')">Mapas</li>
                 </ul>
             </div>
        </header> 
@@ -618,8 +679,10 @@ watch(alumnos,(nuevo,viejo) => {
 
                 <div class="date">
                     <span>Periodo</span>
-                    <input type="date" title="Fecha de inicio" class="date-search" placeholder="Fecha inicio">
-                    <input type="date" title="Fecha de fin" class="date-search" placeholder="Fecha fin">
+                    <input type="date" title="Fecha de inicio" class="date-search" placeholder="Fecha inicio" id="fechaListadoInicio">
+                    <input type="date" title="Fecha de fin" class="date-search" placeholder="Fecha fin" id="fechaListadoFinal">
+                    <br>
+                    <button id="botonStats" v-on:click="onClickListado()">Buscar</button>
                 </div>
     
             </div>
@@ -635,29 +698,22 @@ watch(alumnos,(nuevo,viejo) => {
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody v-if="!mostrarListado">
                     <tr>
-                        <td>Lucía</td>
-                        <td>García González</td>
-                        <td>1 ESO A</td>
                         <td>?</td>
-                    </tr>
-
-                    <tr>
-                        <td>Pablo</td>
-                        <td>Motos Burgos</td>
-                        <td>2 ESO B</td>
                         <td>?</td>
-                    </tr>
-
-                    <tr>
-                        <td>María</td>
-                        <td>López González</td>
-                        <td>4 ESO C</td>
+                        <td>?</td>
                         <td>?</td>
                     </tr>
                 </tbody>
-
+                <tbody v-else>
+                    <tr v-for="i in _listadoAlumno">
+                        <td>{{ i.nombre }}</td>
+                        <td>{{ i.apellidos }}</td>
+                        <td>{{ i.curso }}</td>
+                        <td>{{ i.numBathroom }}</td>
+                    </tr>
+                </tbody>
             </table>
 
         </div>
@@ -982,6 +1038,11 @@ a, li{
         left: 0;    /**/
         transition: all 0.25s;  /*Activamos una transición para que el menú aparezca*/
     }
+
+}
+
+.botonMenu{
+    cursor: pointer;
 }
 
 </style>
