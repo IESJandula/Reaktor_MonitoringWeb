@@ -32,3 +32,22 @@ async function openPrinters()
     //Convertimos a json datos planos y guardamos en una variable que mostramos por consola
     datos = await response.json()
 }
+
+async function openTimetable()
+{
+    response = await fetch('http://localhost:5173',
+    {
+        method:'POST',//Informamos de que se utilizara una llamada de metodo post
+        headers:{//Con los headers decimos que se utiliza json es muy importante
+            'Content-Type':'application/json'
+        },
+        body: JSON.stringify( //Convertimos a json
+            { 
+            username: userName.innerHTML, //Para la clave username valor username
+            roles: roles.innerHTML //Para la clave password el valor password
+        })
+    })
+        
+    //Convertimos a json datos planos y guardamos en una variable que mostramos por consola
+    datos = await response.json()
+}
